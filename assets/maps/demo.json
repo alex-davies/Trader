@@ -1,0 +1,355 @@
+{ "height":10,
+ "layers":[
+        {
+         "data":[108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108],
+         "height":10,
+         "name":"Ground",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":10,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 459, 0, 0, 0, 0, 0, 0, 0, 0, 0, 480, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":10,
+         "name":"buildings",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":10,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":10,
+         "name":"Cities",
+         "objects":[
+                {
+                 "height":96,
+                 "id":19,
+                 "name":"",
+                 "rotation":0,
+                 "type":"City",
+                 "visible":true,
+                 "width":96,
+                 "x":0,
+                 "y":0
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":10,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":10,
+         "name":"Player",
+         "objects":[
+                {
+                 "height":320,
+                 "id":20,
+                 "name":"",
+                 "rotation":0,
+                 "type":"Player",
+                 "visible":true,
+                 "width":320,
+                 "x":0,
+                 "y":0
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":false,
+         "width":10,
+         "x":0,
+         "y":0
+        }],
+ "nextobjectid":22,
+ "orientation":"orthogonal",
+ "renderorder":"right-down",
+ "tileheight":32,
+ "tilesets":[
+        {
+         "columns":21,
+         "firstgid":1,
+         "image":"terrain.png",
+         "imageheight":736,
+         "imagewidth":672,
+         "margin":0,
+         "name":"tileset",
+         "spacing":0,
+         "terrains":[
+                {
+                 "name":"water",
+                 "tile":322
+                }, 
+                {
+                 "name":"grass",
+                 "tile":232
+                }, 
+                {
+                 "name":"desert",
+                 "tile":357
+                }],
+         "tilecount":483,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "458":
+                {
+                 "production_wood":1
+                },
+             "479":
+                {
+                 "production_food":1
+                }
+            },
+         "tilepropertytypes":
+            {
+             "458":
+                {
+                 "production_wood":"int"
+                },
+             "479":
+                {
+                 "production_food":"int"
+                }
+            },
+         "tiles":
+            {
+             "123":
+                {
+                 "terrain":[0, 0, 0, 0]
+                },
+             "124":
+                {
+                 "terrain":[0, 0, 0, 0]
+                },
+             "125":
+                {
+                 "terrain":[0, 0, 0, 0]
+                },
+             "231":
+                {
+                 "terrain":[1, 1, 1, 1]
+                },
+             "232":
+                {
+                 "terrain":[1, 1, 1, 1]
+                },
+             "233":
+                {
+                 "terrain":[1, 1, 1, 1]
+                },
+             "246":
+                {
+                 "animation":[
+                        {
+                         "duration":500,
+                         "tileid":246
+                        }, 
+                        {
+                         "duration":500,
+                         "tileid":247
+                        }, 
+                        {
+                         "duration":500,
+                         "tileid":248
+                        }]
+                },
+             "256":
+                {
+                 "terrain":[2, 2, 2, 0]
+                },
+             "257":
+                {
+                 "terrain":[2, 2, 0, 2]
+                },
+             "259":
+                {
+                 "terrain":[0, 0, 0, 1]
+                },
+             "260":
+                {
+                 "terrain":[0, 0, 1, 0]
+                },
+             "277":
+                {
+                 "terrain":[2, 0, 2, 2]
+                },
+             "278":
+                {
+                 "terrain":[0, 2, 2, 2]
+                },
+             "280":
+                {
+                 "terrain":[0, 1, 0, 0]
+                },
+             "281":
+                {
+                 "terrain":[1, 0, 0, 0]
+                },
+             "297":
+                {
+                 "terrain":[0, 0, 0, 2]
+                },
+             "298":
+                {
+                 "terrain":[0, 0, 2, 2]
+                },
+             "299":
+                {
+                 "terrain":[0, 0, 2, 0]
+                },
+             "300":
+                {
+                 "terrain":[1, 1, 1, 0]
+                },
+             "301":
+                {
+                 "terrain":[1, 1, 0, 0]
+                },
+             "302":
+                {
+                 "terrain":[1, 1, 0, 1]
+                },
+             "318":
+                {
+                 "terrain":[0, 2, 0, 2]
+                },
+             "320":
+                {
+                 "terrain":[2, 0, 2, 0]
+                },
+             "321":
+                {
+                 "terrain":[1, 0, 1, 0]
+                },
+             "323":
+                {
+                 "terrain":[0, 1, 0, 1]
+                },
+             "339":
+                {
+                 "terrain":[0, 2, 0, 0]
+                },
+             "340":
+                {
+                 "terrain":[2, 2, 0, 0]
+                },
+             "341":
+                {
+                 "terrain":[2, 0, 0, 0]
+                },
+             "342":
+                {
+                 "terrain":[1, 0, 1, 1]
+                },
+             "343":
+                {
+                 "terrain":[0, 0, 1, 1]
+                },
+             "344":
+                {
+                 "terrain":[0, 1, 1, 1]
+                },
+             "357":
+                {
+                 "terrain":[2, 2, 2, 2]
+                },
+             "358":
+                {
+                 "terrain":[2, 2, 2, 2]
+                },
+             "359":
+                {
+                 "terrain":[2, 2, 2, 2]
+                },
+             "82":
+                {
+                 "terrain":[0, 0, 0, 0]
+                }
+            },
+         "tilewidth":32
+        }, 
+        {
+         "columns":21,
+         "firstgid":484,
+         "image":"terrain.png",
+         "imageheight":736,
+         "imagewidth":672,
+         "margin":0,
+         "name":"terrain",
+         "spacing":0,
+         "terrains":[
+                {
+                 "name":"grass",
+                 "tile":232
+                }, 
+                {
+                 "name":"waer",
+                 "tile":322
+                }],
+         "tilecount":483,
+         "tileheight":32,
+         "tiles":
+            {
+             "259":
+                {
+                 "terrain":[1, 1, 1, 0]
+                },
+             "260":
+                {
+                 "terrain":[1, 1, 0, 1]
+                },
+             "280":
+                {
+                 "terrain":[1, 0, 1, 1]
+                },
+             "281":
+                {
+                 "terrain":[0, 1, 1, 1]
+                },
+             "300":
+                {
+                 "terrain":[0, 0, 0, 1]
+                },
+             "301":
+                {
+                 "terrain":[0, 0, 1, 1]
+                },
+             "302":
+                {
+                 "terrain":[0, 0, 1, 0]
+                },
+             "321":
+                {
+                 "terrain":[0, 1, 0, 1]
+                },
+             "323":
+                {
+                 "terrain":[1, 0, 1, 0]
+                },
+             "342":
+                {
+                 "terrain":[0, 1, 0, 0]
+                },
+             "343":
+                {
+                 "terrain":[1, 1, 0, 0]
+                },
+             "344":
+                {
+                 "terrain":[1, 0, 0, 0]
+                }
+            },
+         "tilewidth":32
+        }],
+ "tilewidth":32,
+ "version":1,
+ "width":10
+}

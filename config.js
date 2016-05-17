@@ -8,8 +8,8 @@ System.config({
   },
 
   map: {
+    "eventemitter3": "npm:eventemitter3@1.2.0",
     "linq": "npm:linq@3.0.5",
-    "lodash": "npm:lodash@4.3.0",
     "pixi.js": "npm:pixi.js@3.0.11",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
@@ -24,7 +24,7 @@ System.config({
       "path-browserify": "npm:path-browserify@0.0.0"
     },
     "github:jspm/nodelibs-process@0.1.2": {
-      "process": "npm:process@0.11.2"
+      "process": "npm:process@0.11.3"
     },
     "github:jspm/nodelibs-punycode@0.1.0": {
       "punycode": "npm:punycode@1.3.2"
@@ -149,10 +149,6 @@ System.config({
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
     },
-    "npm:lodash@4.3.0": {
-      "buffer": "github:jspm/nodelibs-buffer@0.1.0",
-      "process": "github:jspm/nodelibs-process@0.1.2"
-    },
     "npm:path-browserify@0.0.0": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
@@ -168,13 +164,13 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.2",
       "punycode": "github:jspm/nodelibs-punycode@0.1.0",
       "querystring": "github:jspm/nodelibs-querystring@0.1.0",
-      "resource-loader": "npm:resource-loader@1.6.4",
+      "resource-loader": "npm:resource-loader@1.6.5",
       "url": "github:jspm/nodelibs-url@0.1.0"
     },
     "npm:process-nextick-args@1.0.7": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:process@0.11.2": {
+    "npm:process@0.11.3": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
     },
     "npm:punycode@1.3.2": {
@@ -232,7 +228,7 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.2",
       "systemjs-json": "github:systemjs/plugin-json@0.1.2"
     },
-    "npm:resource-loader@1.6.4": {
+    "npm:resource-loader@1.6.5": {
       "async": "npm:async@0.9.2",
       "child_process": "github:jspm/nodelibs-child_process@0.1.0",
       "eventemitter3": "npm:eventemitter3@1.2.0",
@@ -267,7 +263,7 @@ System.config({
     "npm:stream-browserify@1.0.0": {
       "events": "github:jspm/nodelibs-events@0.1.1",
       "inherits": "npm:inherits@2.0.1",
-      "readable-stream": "npm:readable-stream@1.1.14"
+      "readable-stream": "npm:readable-stream@1.0.34"
     },
     "npm:string_decoder@0.10.31": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0"

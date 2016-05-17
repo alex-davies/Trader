@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import Util from "../../util/Util";
 
 export class SceneManager{
 
@@ -7,7 +8,7 @@ export class SceneManager{
 
     constructor(private container:HTMLElement){
         this.renderer = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight);
-        this.renderer.backgroundColor = 0x2F8136;
+        this.renderer.backgroundColor = 0xFF0000;
         container.appendChild(this.renderer.view);
 
         this.animate();
@@ -24,11 +25,7 @@ export class SceneManager{
 
     public setScene(scene:PIXI.DisplayObject){
         this.currentScene = scene;
-
-        var duckScene = <any>scene;
-        if(duckScene.resize){
-            duckScene.resize(this.renderer.width, this.renderer.height)
-        }
+        Util.TrySetRenderRect(scene, {x:0,y:0,width:this.renderer.width, height:this.renderer.height});
     }
 
     animate() {

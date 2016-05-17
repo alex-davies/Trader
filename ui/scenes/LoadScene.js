@@ -10,8 +10,6 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
         function LoadScene(loaded) {
             var _this = this;
             _super.call(this);
-            this.viewWidth = 0;
-            this.viewHeight = 0;
             this.minimumLoadingPageShown = 1000;
             this.skipLoadingPageTimeout = 200;
             //some quick loading to show a nice loading screen
@@ -23,15 +21,20 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
                     _this.loadingSprite = new PIXI.Sprite(loadedResources.loadingImage.texture);
                     _this.loadingSprite.anchor = new PIXI.Point(0.5, 0.5);
                     _this.addChild(_this.loadingSprite);
-                    _this.resize(_this.viewWidth, _this.viewHeight); //resize to position our sprite
+                    _this.setRenderRect(_this.renderRect); //resize to position our sprite
                     pageIsShown = true;
                 }, _this.skipLoadingPageTimeout);
                 var startTime = new Date().getTime();
                 //now we start loading the real content
-                PIXI.loader.add('gameState', '/assets/maps/demo.json').load(function (loader, loadedResources) {
+                PIXI.loader
+                    .add('gameState', '/assets/maps/demo.json')
+                    .add('menuBackground', '/assets/images/backgrounds/parchment.png')
+                    .add('menuBorder', '/assets/images/backgrounds/shadow.png').load(function (loader, loadedResources) {
                     var resources = new Resources_1.default();
                     resources.world = new World_1.default(loadedResources.gameState.data);
-                    //we know now the tilests, so we will load each of hte tilesets
+                    resources.menuBackground = loadedResources.menuBackground.texture;
+                    resources.menuBorder = loadedResources.menuBorder.texture;
+                    //we now know the tilests, so we will load each of hte tilesets
                     var baseDirectory = '/assets/maps/';
                     resources.world.state.tilesets.forEach(function (tileset) {
                         PIXI.loader.add(tileset.name, baseDirectory + tileset.image);
@@ -59,13 +62,11 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
                 });
             });
         }
-        LoadScene.prototype.resize = function (width, height) {
-            console.debug('Resizing LoadScene', { width: width, height: height });
-            this.viewWidth = width;
-            this.viewHeight = height;
+        LoadScene.prototype.setRenderRect = function (rect) {
+            this.renderRect = rect;
             if (this.loadingSprite != null) {
-                this.loadingSprite.x = this.viewWidth / 2;
-                this.loadingSprite.y = this.viewHeight / 2;
+                this.loadingSprite.x = rect.width / 2;
+                this.loadingSprite.y = rect.height / 2;
             }
         };
         return LoadScene;

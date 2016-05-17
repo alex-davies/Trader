@@ -4,8 +4,7 @@ import World from "../../engine/World";
 
 export default class LoadScene extends PIXI.Container{
     private loadingSprite:PIXI.Sprite;
-    private viewWidth:number = 0;
-    private viewHeight:number = 0;
+    private renderRect:{x:number,y:number,width:number,height:number};
     public minimumLoadingPageShown = 1000;
     public skipLoadingPageTimeout = 200;
 
@@ -23,7 +22,7 @@ export default class LoadScene extends PIXI.Container{
                 this.loadingSprite.anchor = new PIXI.Point(0.5,0.5);
                 this.addChild(this.loadingSprite);
 
-                this.resize(this.viewWidth, this.viewHeight); //resize to position our sprite
+                this.setRenderRect(this.renderRect); //resize to position our sprite
                 pageIsShown = true;
             },this.skipLoadingPageTimeout)
 
@@ -32,12 +31,17 @@ export default class LoadScene extends PIXI.Container{
             var startTime = new Date().getTime();
 
             //now we start loading the real content
-            PIXI.loader.add('gameState', '/assets/maps/demo.json').load((loader, loadedResources)=> {
+            PIXI.loader
+                .add('gameState', '/assets/maps/demo.json')
+                .add('menuBackground', '/assets/images/backgrounds/parchment.png')
+                .add('menuBorder', '/assets/images/backgrounds/shadow.png').load((loader, loadedResources)=> {
 
                 var resources = new Resources();
                 resources.world = new World(loadedResources.gameState.data);
+                resources.menuBackground = loadedResources.menuBackground.texture;
+                resources.menuBorder = loadedResources.menuBorder.texture;
 
-                //we know now the tilests, so we will load each of hte tilesets
+                //we now know the tilests, so we will load each of hte tilesets
                 var baseDirectory = '/assets/maps/';
                 resources.world.state.tilesets.forEach(tileset=>{
                     PIXI.loader.add(tileset.name,baseDirectory + tileset.image);
@@ -75,15 +79,12 @@ export default class LoadScene extends PIXI.Container{
         });
     }
 
-    resize(width:number, height:number){
-        console.debug('Resizing LoadScene', {width:width, height:height});
-        this.viewWidth = width;
-        this.viewHeight= height;
+    public setRenderRect(rect:{x:number, y:number, width:number, height:number}){
+        this.renderRect = rect;
         if(this.loadingSprite != null) {
 
-            this.loadingSprite.x = this.viewWidth /2;
-            this.loadingSprite.y = this.viewHeight /2;
+            this.loadingSprite.x = rect.width /2;
+            this.loadingSprite.y = rect.height /2;
         }
-
     }
 }

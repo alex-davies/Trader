@@ -3,23 +3,24 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "pixi.js", "lodash"], function (require, exports, PIXI, _) {
+define(["require", "exports", "pixi.js"], function (require, exports, PIXI) {
     "use strict";
     var Monitor = (function () {
         function Monitor(predicate, action) {
+            var _this = this;
             this.predicate = predicate;
             this.action = action;
-            this.tick = function () {
-                if (predicate())
-                    action();
-            };
+            this.tick = (function () {
+                if (predicate.call(_this))
+                    action.call(_this);
+            }).bind(this);
             this.start();
         }
         Monitor.prototype.start = function () {
-            PIXI.ticker.shared.add(this.tick);
+            PIXI.ticker.shared.add(this.tick, this);
         };
         Monitor.prototype.stop = function () {
-            PIXI.ticker.shared.remove(this.tick);
+            PIXI.ticker.shared.remove(this.tick, this);
         };
         return Monitor;
     }());
@@ -29,7 +30,7 @@ define(["require", "exports", "pixi.js", "lodash"], function (require, exports, 
         function ChangeMonitor(propertySelector, action) {
             var _this = this;
             _super.call(this, function () {
-                return !_.isEqual(propertySelector(), _this.lastValue);
+                return propertySelector() === _this.lastValue;
             }, function () {
                 _this.lastValue = propertySelector();
                 action();

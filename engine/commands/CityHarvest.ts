@@ -3,8 +3,12 @@ import World from "../World";
 import {CityType} from "../objectTypes/City";
 import * as Enumerable from "linq"
 import {Properties} from "../objectTypes/Properties";
+import {TileProperties} from "../objectTypes/TileProperties";
+
 
 export default class CityHarvest implements Command{
+    static TypeName = "CityHarvest";
+
     constructor(){
 
     }
@@ -35,12 +39,38 @@ export default class CityHarvest implements Command{
         return true;
     }
 
+    executeXXX(world:World):CommandResult{
+        // world.objectsOfType(CityType).forEach(city=>{
+        //     Enumerable.from(world.tileLayers())
+        //         .selectMany(layer=>world.tileGidsInRect(layer,city))
+        //         .select(gid=>world.tileProperties(gid))
+        //         .forEach(prop=>{
+        //             city.properties = city.properties || {};
+        //             CityHarvest.TryApplyProduction(prop, city.properties);
+        //         });
+        // });
+
+        return SuccessResult;
+    }
+
     execute(world:World):CommandResult{
         world.objectsOfType(CityType).forEach(city=>{
+
+            var cityCenter = {
+                x:city.x+city.width / 2,
+                y:city.y-city.height / 2
+            }
+            var cityTileIndex = world.getTileIndex(cityCenter);
+            world.getExtendedNeighbours(cityTileIndex, function(){return true}).toArray()
             Enumerable.from(world.tileLayers())
-                .selectMany(layer=>world.tileGidsInRect(layer,city))
-                .select(gid=>world.tileProperties(gid))
+                .selectMany(layer=>world
+                    .getExtendedNeighbours(cityTileIndex,tileIndex=>{
+
+                        return tileIndex === cityTileIndex || world.getTilePropertiesFromIndex<TileProperties>(layer,tileIndex).isPartOfCity
+                    })
+                    .select(tileIndex=>world.getTilePropertiesFromIndex(layer, tileIndex)))
                 .forEach(prop=>{
+
                     city.properties = city.properties || {};
                     CityHarvest.TryApplyProduction(prop, city.properties);
                 });
@@ -48,6 +78,7 @@ export default class CityHarvest implements Command{
 
         return SuccessResult;
     }
+    
     canExecute(world:World):CommandResult{
         return SuccessResult;
     }

@@ -1,80 +1,135 @@
 import Resources from "../Resources";
 import Util from "../../util/Util";
 import {ChangeMonitor} from "../../util/Monitor";
-import CameraTranslateInteraction from "../interactions/CameraTranslateInteraction";
-import PlayerViewSet from "../../engine/commands/PlayerViewSet";
 import {pinchable, panable} from "../../util/Interactions";
 import {XYUtil} from "../../util/Coordinates";
+import PlayerLookAt from "../../engine/commands/PlayerLookAt";
 
 export default class Camera extends PIXI.Container{
 
     debugGraphics = new PIXI.Graphics();
 
-    screenWidth:number;
-    screenHeight:number;
+    renderRect:{x:number, y:number, width:number, height:number};
 
     constructor(public resources:Resources,
                 public target:PIXI.Container,
-                public minZoom:number = 0.3,
-                public maxZoom:number = 3){
+                public minZoom:number = 1,
+                public maxZoom:number = 1){
         super();
+        
         this.addChild(target);
         this.addChild(this.debugGraphics);
 
-        //makre sure we update whenever hte player view changes
-        new ChangeMonitor(()=>{
-            var player = resources.world.player();
-            return {x:player.x, y:player.y,width:player.width,height:player.height}
-        }, ()=>this.updateCamera());
+        this.renderRect = {x:0,y:0,width:this.width, height:this.height};
 
+        this.resources.world.onCommand(PlayerLookAt, ()=>this.lookAtPlayer());
 
         //setup the panning
         panable(this);
         this.on('panmove', (event)=> {
-            var world = this.resources.world;
-            var player = world.player();
 
-            var scaleX = this.screenWidth / player.width;
-            var scaleY = this.screenHeight / player.height;
-
-            var newViewRect = this.adjustViewRectToFitScreen({
-                x:player.x  - event.deltaX / scaleX,
-                y:player.y  - event.deltaY / scaleY,
-                width:player.width,
-                height:player.height});
+            let newLookAt = this.constrainLookAt({
+                x:this.target.pivot.x - event.deltaX,
+                y:this.target.pivot.y - event.deltaY
+            });
             
-            world.IssueCommand(new PlayerViewSet(newViewRect));
+            this.resources.world.IssueCommand(new PlayerLookAt(newLookAt));
         });
 
+    }
 
-        //setup the zooming
-        pinchable(this);
-        this.on('pinchmove', (event)=> {
-           //TODO: need to get on phone to implment and test this
+    public lookAtPlayer(){
+        //center our screen on the player
+        var player = this.resources.world.player();
+
+        this.lookAt({
+            x: player.x + player.width / 2,
+            y: player.y + player.height / 2
         });
-        var onWheel = ( event )=> {
-           let delta    = event.wheelDelta || -event.detail;
-           let local_pt = new PIXI.Point();
-           let point    = new PIXI.Point(event.pageX, event.pageY);
 
-            PIXI.interaction.InteractionData.prototype.getLocalPosition(this, local_pt, point);
+        //this.lookAt({x:0,y:0});
 
-            let factor = delta < 0 ? 1.1 : 1/1.1;
+        // this.target.pivot.x = Math.floor(player.x + player.width / 2);
+        // this.target.pivot.y = Math.floor(player.y + player.height / 2);
+        //
+        // this.target.x = Math.floor(this.renderRect.width / 2) ;
+        // this.target.y = Math.floor(this.renderRect.height / 2) ;
+    }
 
-            var world = this.resources.world;
-            var player = world.player();
+    public lookAt(point:{x:number,y:number}){
+        //console.log(point);
+        point = this.constrainLookAt(point);
+        this.target.pivot.x = Math.floor(point.x);
+        this.target.pivot.y = Math.floor(point.y);
 
-            var newViewRect = this.adjustViewRectToFitScreen(XYUtil.scaleRect(
-                player,
-                factor,
-                local_pt
-            ));
+        this.target.x = Math.floor(this.renderRect.width / 2) ;
+        this.target.y = Math.floor(this.renderRect.height / 2);
 
-            world.IssueCommand(new PlayerViewSet(newViewRect));
+        this.setChildRenderRect();
+    }
+
+    public constrainLookAt(point:{x:number,y:number}){
+        let viewRect = {
+            x: point.x - this.renderRect.width / 2,
+            y: point.y - this.renderRect.height / 2,
+            width:this.renderRect.width,
+            height:this.renderRect.height
         }
-        document.addEventListener('DOMMouseScroll', onWheel.bind(this)); // Firefox
-        document.addEventListener('mousewheel', onWheel.bind(this));     // Not Firefox
 
+        let worldRect = {
+            x:0,
+            y:0,
+            width:this.target.width,
+            height:this.target.height
+        };
+
+        viewRect = this.constrainRect(viewRect, worldRect);
+
+        return {
+            x:viewRect.x + viewRect.width / 2,
+            y:viewRect.y + viewRect.height /2
+        }
+
+    }
+    
+    public constrainRect(
+        rect:{x:number,y:number,width:number,height:number},
+        constraint:{x:number,y:number,width:number,height:number}){
+
+        if(rect.width < constraint.width){
+            //view rect is within the constraint
+            if(rect.x < constraint.x)
+                rect.x = constraint.x;
+            if(rect.x+rect.width > constraint.x+constraint.width)
+                rect.x =constraint.x+constraint.width - rect.width;
+        }
+        else if(rect.width >= constraint.width){
+            //view rect contains the constract
+            if(rect.x > constraint.x)
+                rect.x = constraint.x;
+            if(rect.x+rect.width < constraint.x+constraint.width)
+                rect.x =constraint.x+constraint.width - rect.width;
+        }
+
+
+        if(rect.height < constraint.height){
+            //view rect is within the constraint
+            if(rect.y < constraint.y)
+                rect.y = constraint.y;
+            if(rect.y+rect.height > constraint.y+constraint.height)
+                rect.y =constraint.y+constraint.height - rect.height;
+        }
+        else if(rect.height >= constraint.height){
+            //view rect contains the constraint
+            if(rect.y > constraint.y)
+                rect.y = constraint.y;
+            if(rect.y+rect.height < constraint.y+constraint.height)
+                rect.y =constraint.y+constraint.height - rect.height;
+        }
+
+
+
+        return rect
     }
 
 
@@ -101,8 +156,8 @@ export default class Camera extends PIXI.Container{
     ):{x:number,y:number,width:number,height:number}{
 
         worldRect = worldRect || {x:0, y:0, width:this.target.width, height:this.target.height};
-        screenWidth = screenWidth || this.screenWidth;
-        screenHeight = screenHeight || this.screenHeight;
+        screenWidth = screenWidth || this.renderRect.width;
+        screenHeight = screenHeight || this.renderRect.height;
         minZoom = minZoom || this.minZoom;
         maxZoom = maxZoom || this.maxZoom;
 
@@ -164,43 +219,18 @@ export default class Camera extends PIXI.Container{
 
     }
 
-    resize(width:number, height:number){
-        this.screenWidth = width;
-        this.screenHeight = height;
+    public setRenderRect(rect:{x:number, y:number, width:number, height:number}){
+        this.renderRect = rect;
 
-        var player = this.resources.world.player();
-
-        //screen has changed so we need to update our vie to fit the screen
-        var newViewRect = this.adjustViewRectToFitScreen(player);
-        this.resources.world.IssueCommand(new PlayerViewSet(newViewRect));
+        this.lookAtPlayer();
+        this.lookAtPlayer();
     }
 
-    updateCamera(){
-        //center our screen on the player
-        var player = this.resources.world.player();
-
-        //pivot around the center of our view box, this makes
-        //zooming a bit simpler
-        this.pivot.x = player.x + player.width/2;
-        this.pivot.y = player.y + player.height /2;
-
-        //center it on the screen
-        this.x = this.screenWidth/2;
-        this.y = this.screenHeight/2;
-
-
-        //scale so get at least the players view area in
-        var scaleX = this.screenWidth / player.width;
-        var scaleY = this.screenHeight / player.height;
-        this.scale.x = scaleX;
-        this.scale.y = scaleY;
-
-
-        // this.debugGraphics.clear();
-        // this.debugGraphics.lineStyle(2, 0xFF0000);
-        //
-        // this.debugGraphics.beginFill(0xFF0000, 0.5);
-        // this.debugGraphics.drawRect(player.x,player.y,player.width,player.height);
-        // this.debugGraphics.endFill();
+    private setChildRenderRect(){
+        Util.TrySetRenderRect(this.target, {
+            x:this.target.pivot.x-this.target.x,
+            y:this.target.pivot.y-this.target.y,
+            width:this.renderRect.width, height:this.renderRect.height});
     }
+
 }

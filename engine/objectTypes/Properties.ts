@@ -1,32 +1,35 @@
 import * as Enumerable from "linq"
 export class Properties{
-    static Production = "production.";
-    static Inventory = "inventory.";
+    private static ProductionPrefix = "production.";
+    private static InventoryPrefix = "inventory.";
     
     public static ProductionPropertyName(resource:string){
-        return this.Production + resource;
+        return this.ProductionPrefix + resource;
     }
 
     public static ProductionResourceName(property:string):string{
-        return property.indexOf(this.Production) === 0
-            ? property.substring(this.Production.length)
+        return property.indexOf(this.ProductionPrefix) === 0
+            ? property.substring(this.ProductionPrefix.length)
             : null;
     }
 
     public static IsProduction(property:string):boolean{
-        return property.indexOf(this.Production) === 0
+        return property.indexOf(this.ProductionPrefix) === 0
     }
 
 
     public static InventoryPropertyName(resource:string){
-        return this.Inventory + resource;
+        return this.InventoryPrefix + resource;
     }
 
-    
-    public static ResourceName(propertyName:string){
-        var seperatorIndex = propertyName.indexOf(".");
-        return propertyName.substring(seperatorIndex);
+    public static InventoryResourceName(property:string):string{
+        return property.indexOf(this.InventoryPrefix) === 0
+            ? property.substring(this.InventoryPrefix.length)
+            : null;
     }
 
-
+    public static IsInventory(property:string):boolean{
+        return property.indexOf(this.InventoryPrefix) === 0
+    }
 }
+

@@ -1,24 +1,23 @@
 import * as PIXI from "pixi.js"
-import * as _ from "lodash"
 
 export class Monitor{
 
     tick:()=>void;
 
     constructor(public predicate:()=>boolean, public action: ()=>void){
-        this.tick = ()=>{
-            if(predicate())
-                action();
-        };
+        this.tick = (()=>{
+            if(predicate.call(this))
+                action.call(this);
+        }).bind(this);
         this.start();
     }
 
     start(){
-        PIXI.ticker.shared.add(this.tick)
+        PIXI.ticker.shared.add(this.tick, this)
     }
 
     stop(){
-        PIXI.ticker.shared.remove(this.tick);
+        PIXI.ticker.shared.remove(this.tick, this);
     }
 }
 
@@ -27,7 +26,7 @@ export class ChangeMonitor extends Monitor{
 
     constructor(public propertySelector:()=>any, public action: ()=>void) {
         super(()=>{
-            return !_.isEqual(propertySelector(), this.lastValue);
+            return propertySelector() === this.lastValue;
         },()=>{
             this.lastValue = propertySelector();
             action();

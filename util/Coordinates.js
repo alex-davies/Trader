@@ -44,7 +44,7 @@ define(["require", "exports"], function (require, exports) {
             return xy1 && xy2 && xy1.x === xy2.x && xy1.y === xy2.y;
         };
         XYUtil.scaleRect = function (rect, scale, pivot) {
-            if (pivot === void 0) { pivot = { x: rect.x + rect.width, y: rect.y + rect.height }; }
+            if (pivot === void 0) { pivot = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }; }
             var xyScale = typeof scale === "number"
                 ? { x: scale, y: scale }
                 : scale;

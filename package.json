@@ -15,8 +15,8 @@
   },
   "jspm": {
     "dependencies": {
+      "eventemitter3": "npm:eventemitter3@^1.2.0",
       "linq": "npm:linq@^3.0.5",
-      "lodash": "npm:lodash@^4.3.0",
       "pixi.js": "npm:pixi.js@^3.0.11"
     },
     "devDependencies": {}

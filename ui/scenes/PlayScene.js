@@ -3,25 +3,31 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera"], function (require, exports, PIXI, MapDisplay_1, Camera_1) {
+define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../controls/StackContainer", "../menus/MenuContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, StackContainer_1, MenuContainer_1) {
     "use strict";
     var PlayScene = (function (_super) {
         __extends(PlayScene, _super);
         function PlayScene(resources) {
-            _super.call(this);
-            this.viewWidth = 0;
-            this.viewHeight = 0;
+            var _this = this;
+            _super.call(this, -resources.menuBorder.width);
+            PIXI.ticker.shared.add(function () {
+                resources.world.tick(PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
+            });
             this.mapDisplay = new MapDisplay_1.default(resources);
             this.camera = new Camera_1.default(resources, this.mapDisplay);
-            this.addChild(this.camera);
+            this.menuContainer = new MenuContainer_1.default(resources);
+            this.addChild(this.menuContainer, { pixels: 200, z: 1 });
+            this.addChild(this.camera, { weight: 1 });
+            this.mapDisplay.on("click-city", function (city) {
+                _this.menuContainer.showCityMenu(city);
+            });
+            setInterval(function () {
+                var camera = _this.camera;
+                //debugger;
+            }, 5000);
         }
-        PlayScene.prototype.resize = function (width, height) {
-            this.viewWidth = width;
-            this.viewHeight = height;
-            this.camera.resize(width, height);
-        };
         return PlayScene;
-    }(PIXI.Container));
+    }(StackContainer_1.HContainer));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = PlayScene;
 });

@@ -34,7 +34,35 @@ export default class Util{
         return radians / Math.PI * 180;
     }
     
-    
+    // static TryResize(target:any, width:number, height:number){
+    //     Util.TryCall(target, "resize", width, height);
+    // }
+
+    static TrySetRenderRect(target:any, rect:{x:number, y:number, width:number, height:number}){
+        Util.TryCall(target, "setRenderRect", rect);
+    }
+
+    static TryCall(target:any, method:string, ...args:any[]):any{
+        if(!target)
+            return;
+        let fn = target[method];
+        if(typeof fn === "function"){
+            return fn.apply(target, args);
+        }
+    }
+
+
+    static FunctionName(fn: Function){
+        if((<any>fn).name)
+            return (<any>fn).name;
+
+        //fallback for older JS which doesnt have a name proeprty
+        var funcNameRegex = /function (.{1,})\(/;
+        var results = (funcNameRegex).exec(fn.toString());
+        if(results && results.length>1)
+            return results[1];
+        throw new Error("function does not have a name")
+    }
 
 
 }

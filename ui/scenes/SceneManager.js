@@ -1,11 +1,11 @@
-define(["require", "exports", 'pixi.js'], function (require, exports, PIXI) {
+define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, exports, PIXI, Util_1) {
     "use strict";
     var SceneManager = (function () {
         function SceneManager(container) {
             var _this = this;
             this.container = container;
             this.renderer = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight);
-            this.renderer.backgroundColor = 0x2F8136;
+            this.renderer.backgroundColor = 0xFF0000;
             container.appendChild(this.renderer.view);
             this.animate();
             window.addEventListener('resize', function () {
@@ -18,10 +18,7 @@ define(["require", "exports", 'pixi.js'], function (require, exports, PIXI) {
         }
         SceneManager.prototype.setScene = function (scene) {
             this.currentScene = scene;
-            var duckScene = scene;
-            if (duckScene.resize) {
-                duckScene.resize(this.renderer.width, this.renderer.height);
-            }
+            Util_1.default.TrySetRenderRect(scene, { x: 0, y: 0, width: this.renderer.width, height: this.renderer.height });
         };
         SceneManager.prototype.animate = function () {
             var _this = this;

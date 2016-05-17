@@ -24,11 +24,32 @@ define(["require", "exports", "engine/commands/Command", "../objectTypes/City", 
             });
             return true;
         };
+        CityHarvest.prototype.executeXXX = function (world) {
+            // world.objectsOfType(CityType).forEach(city=>{
+            //     Enumerable.from(world.tileLayers())
+            //         .selectMany(layer=>world.tileGidsInRect(layer,city))
+            //         .select(gid=>world.tileProperties(gid))
+            //         .forEach(prop=>{
+            //             city.properties = city.properties || {};
+            //             CityHarvest.TryApplyProduction(prop, city.properties);
+            //         });
+            // });
+            return Command_1.SuccessResult;
+        };
         CityHarvest.prototype.execute = function (world) {
             world.objectsOfType(City_1.CityType).forEach(function (city) {
+                var cityCenter = {
+                    x: city.x + city.width / 2,
+                    y: city.y - city.height / 2
+                };
+                var cityTileIndex = world.getTileIndex(cityCenter);
+                world.getExtendedNeighbours(cityTileIndex, function () { return true; }).toArray();
                 Enumerable.from(world.tileLayers())
-                    .selectMany(function (layer) { return world.tileGidsInRect(layer, city); })
-                    .select(function (gid) { return world.tileProperties(gid); })
+                    .selectMany(function (layer) { return world
+                    .getExtendedNeighbours(cityTileIndex, function (tileIndex) {
+                    return tileIndex === cityTileIndex || world.getTilePropertiesFromIndex(layer, tileIndex).isPartOfCity;
+                })
+                    .select(function (tileIndex) { return world.getTilePropertiesFromIndex(layer, tileIndex); }); })
                     .forEach(function (prop) {
                     city.properties = city.properties || {};
                     CityHarvest.TryApplyProduction(prop, city.properties);
@@ -39,6 +60,7 @@ define(["require", "exports", "engine/commands/Command", "../objectTypes/City", 
         CityHarvest.prototype.canExecute = function (world) {
             return Command_1.SuccessResult;
         };
+        CityHarvest.TypeName = "CityHarvest";
         return CityHarvest;
     }());
     Object.defineProperty(exports, "__esModule", { value: true });

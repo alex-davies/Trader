@@ -4,25 +4,29 @@ define(["require", "exports"], function (require, exports) {
         function Properties() {
         }
         Properties.ProductionPropertyName = function (resource) {
-            return this.Production + resource;
+            return this.ProductionPrefix + resource;
         };
         Properties.ProductionResourceName = function (property) {
-            return property.indexOf(this.Production) === 0
-                ? property.substring(this.Production.length)
+            return property.indexOf(this.ProductionPrefix) === 0
+                ? property.substring(this.ProductionPrefix.length)
                 : null;
         };
         Properties.IsProduction = function (property) {
-            return property.indexOf(this.Production) === 0;
+            return property.indexOf(this.ProductionPrefix) === 0;
         };
         Properties.InventoryPropertyName = function (resource) {
-            return this.Inventory + resource;
+            return this.InventoryPrefix + resource;
         };
-        Properties.ResourceName = function (propertyName) {
-            var seperatorIndex = propertyName.indexOf(".");
-            return propertyName.substring(seperatorIndex);
+        Properties.InventoryResourceName = function (property) {
+            return property.indexOf(this.InventoryPrefix) === 0
+                ? property.substring(this.InventoryPrefix.length)
+                : null;
         };
-        Properties.Production = "production.";
-        Properties.Inventory = "inventory.";
+        Properties.IsInventory = function (property) {
+            return property.indexOf(this.InventoryPrefix) === 0;
+        };
+        Properties.ProductionPrefix = "production.";
+        Properties.InventoryPrefix = "inventory.";
         return Properties;
     }());
     exports.Properties = Properties;

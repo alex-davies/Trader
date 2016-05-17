@@ -3,14 +3,14 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "../../util/Monitor", "../../engine/commands/PlayerViewSet", "../../util/Interactions", "../../util/Coordinates"], function (require, exports, Monitor_1, PlayerViewSet_1, Interactions_1, Coordinates_1) {
+define(["require", "exports", "../../util/Util", "../../util/Interactions", "../../util/Coordinates", "../../engine/commands/PlayerLookAt"], function (require, exports, Util_1, Interactions_1, Coordinates_1, PlayerLookAt_1) {
     "use strict";
     var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera(resources, target, minZoom, maxZoom) {
             var _this = this;
-            if (minZoom === void 0) { minZoom = 0.3; }
-            if (maxZoom === void 0) { maxZoom = 3; }
+            if (minZoom === void 0) { minZoom = 1; }
+            if (maxZoom === void 0) { maxZoom = 1; }
             _super.call(this);
             this.resources = resources;
             this.target = target;
@@ -19,44 +19,91 @@ define(["require", "exports", "../../util/Monitor", "../../engine/commands/Playe
             this.debugGraphics = new PIXI.Graphics();
             this.addChild(target);
             this.addChild(this.debugGraphics);
-            //makre sure we update whenever hte player view changes
-            new Monitor_1.ChangeMonitor(function () {
-                var player = resources.world.player();
-                return { x: player.x, y: player.y, width: player.width, height: player.height };
-            }, function () { return _this.updateCamera(); });
+            this.renderRect = { x: 0, y: 0, width: this.width, height: this.height };
+            this.resources.world.onCommand(PlayerLookAt_1.default, function () { return _this.lookAtPlayer(); });
             //setup the panning
             Interactions_1.panable(this);
             this.on('panmove', function (event) {
-                var world = _this.resources.world;
-                var player = world.player();
-                var scaleX = _this.screenWidth / player.width;
-                var scaleY = _this.screenHeight / player.height;
-                var newViewRect = _this.adjustViewRectToFitScreen({
-                    x: player.x - event.deltaX / scaleX,
-                    y: player.y - event.deltaY / scaleY,
-                    width: player.width,
-                    height: player.height });
-                world.IssueCommand(new PlayerViewSet_1.default(newViewRect));
+                var newLookAt = _this.constrainLookAt({
+                    x: _this.target.pivot.x - event.deltaX,
+                    y: _this.target.pivot.y - event.deltaY
+                });
+                _this.resources.world.IssueCommand(new PlayerLookAt_1.default(newLookAt));
             });
-            //setup the zooming
-            Interactions_1.pinchable(this);
-            this.on('pinchmove', function (event) {
-                //TODO: need to get on phone to implment and test this
-            });
-            var onWheel = function (event) {
-                var delta = event.wheelDelta || -event.detail;
-                var local_pt = new PIXI.Point();
-                var point = new PIXI.Point(event.pageX, event.pageY);
-                PIXI.interaction.InteractionData.prototype.getLocalPosition(_this, local_pt, point);
-                var factor = delta < 0 ? 1.1 : 1 / 1.1;
-                var world = _this.resources.world;
-                var player = world.player();
-                var newViewRect = _this.adjustViewRectToFitScreen(Coordinates_1.XYUtil.scaleRect(player, factor, local_pt));
-                world.IssueCommand(new PlayerViewSet_1.default(newViewRect));
-            };
-            document.addEventListener('DOMMouseScroll', onWheel.bind(this)); // Firefox
-            document.addEventListener('mousewheel', onWheel.bind(this)); // Not Firefox
         }
+        Camera.prototype.lookAtPlayer = function () {
+            //center our screen on the player
+            var player = this.resources.world.player();
+            this.lookAt({
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2
+            });
+            //this.lookAt({x:0,y:0});
+            // this.target.pivot.x = Math.floor(player.x + player.width / 2);
+            // this.target.pivot.y = Math.floor(player.y + player.height / 2);
+            //
+            // this.target.x = Math.floor(this.renderRect.width / 2) ;
+            // this.target.y = Math.floor(this.renderRect.height / 2) ;
+        };
+        Camera.prototype.lookAt = function (point) {
+            //console.log(point);
+            point = this.constrainLookAt(point);
+            this.target.pivot.x = Math.floor(point.x);
+            this.target.pivot.y = Math.floor(point.y);
+            this.target.x = Math.floor(this.renderRect.width / 2);
+            this.target.y = Math.floor(this.renderRect.height / 2);
+            this.setChildRenderRect();
+        };
+        Camera.prototype.constrainLookAt = function (point) {
+            var viewRect = {
+                x: point.x - this.renderRect.width / 2,
+                y: point.y - this.renderRect.height / 2,
+                width: this.renderRect.width,
+                height: this.renderRect.height
+            };
+            var worldRect = {
+                x: 0,
+                y: 0,
+                width: this.target.width,
+                height: this.target.height
+            };
+            viewRect = this.constrainRect(viewRect, worldRect);
+            return {
+                x: viewRect.x + viewRect.width / 2,
+                y: viewRect.y + viewRect.height / 2
+            };
+        };
+        Camera.prototype.constrainRect = function (rect, constraint) {
+            if (rect.width < constraint.width) {
+                //view rect is within the constraint
+                if (rect.x < constraint.x)
+                    rect.x = constraint.x;
+                if (rect.x + rect.width > constraint.x + constraint.width)
+                    rect.x = constraint.x + constraint.width - rect.width;
+            }
+            else if (rect.width >= constraint.width) {
+                //view rect contains the constract
+                if (rect.x > constraint.x)
+                    rect.x = constraint.x;
+                if (rect.x + rect.width < constraint.x + constraint.width)
+                    rect.x = constraint.x + constraint.width - rect.width;
+            }
+            if (rect.height < constraint.height) {
+                //view rect is within the constraint
+                if (rect.y < constraint.y)
+                    rect.y = constraint.y;
+                if (rect.y + rect.height > constraint.y + constraint.height)
+                    rect.y = constraint.y + constraint.height - rect.height;
+            }
+            else if (rect.height >= constraint.height) {
+                //view rect contains the constraint
+                if (rect.y > constraint.y)
+                    rect.y = constraint.y;
+                if (rect.y + rect.height < constraint.y + constraint.height)
+                    rect.y = constraint.y + constraint.height - rect.height;
+            }
+            return rect;
+        };
         /***
          * creates a new rectangle that meets the following criteria
          *  * matches the screen width/height ratio
@@ -72,8 +119,8 @@ define(["require", "exports", "../../util/Monitor", "../../engine/commands/Playe
          */
         Camera.prototype.adjustViewRectToFitScreen = function (viewRect, worldRect, screenWidth, screenHeight, minZoom, maxZoom) {
             worldRect = worldRect || { x: 0, y: 0, width: this.target.width, height: this.target.height };
-            screenWidth = screenWidth || this.screenWidth;
-            screenHeight = screenHeight || this.screenHeight;
+            screenWidth = screenWidth || this.renderRect.width;
+            screenHeight = screenHeight || this.renderRect.height;
             minZoom = minZoom || this.minZoom;
             maxZoom = maxZoom || this.maxZoom;
             var newViewRect = { x: viewRect.x, y: viewRect.y, width: viewRect.width, height: viewRect.height };
@@ -118,35 +165,16 @@ define(["require", "exports", "../../util/Monitor", "../../engine/commands/Playe
             //console.debug("",screenWidth,  newViewRect.width);
             return newViewRect;
         };
-        Camera.prototype.resize = function (width, height) {
-            this.screenWidth = width;
-            this.screenHeight = height;
-            var player = this.resources.world.player();
-            //screen has changed so we need to update our vie to fit the screen
-            var newViewRect = this.adjustViewRectToFitScreen(player);
-            this.resources.world.IssueCommand(new PlayerViewSet_1.default(newViewRect));
+        Camera.prototype.setRenderRect = function (rect) {
+            this.renderRect = rect;
+            this.lookAtPlayer();
+            this.lookAtPlayer();
         };
-        Camera.prototype.updateCamera = function () {
-            //center our screen on the player
-            var player = this.resources.world.player();
-            //pivot around the center of our view box, this makes
-            //zooming a bit simpler
-            this.pivot.x = player.x + player.width / 2;
-            this.pivot.y = player.y + player.height / 2;
-            //center it on the screen
-            this.x = this.screenWidth / 2;
-            this.y = this.screenHeight / 2;
-            //scale so get at least the players view area in
-            var scaleX = this.screenWidth / player.width;
-            var scaleY = this.screenHeight / player.height;
-            this.scale.x = scaleX;
-            this.scale.y = scaleY;
-            // this.debugGraphics.clear();
-            // this.debugGraphics.lineStyle(2, 0xFF0000);
-            //
-            // this.debugGraphics.beginFill(0xFF0000, 0.5);
-            // this.debugGraphics.drawRect(player.x,player.y,player.width,player.height);
-            // this.debugGraphics.endFill();
+        Camera.prototype.setChildRenderRect = function () {
+            Util_1.default.TrySetRenderRect(this.target, {
+                x: this.target.pivot.x - this.target.x,
+                y: this.target.pivot.y - this.target.y,
+                width: this.renderRect.width, height: this.renderRect.height });
         };
         return Camera;
     }(PIXI.Container));

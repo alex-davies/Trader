@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../controls/StackContainer", "../menus/MenuContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, StackContainer_1, MenuContainer_1) {
+define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer", "../controls/FillContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1, FillContainer_1) {
     "use strict";
     var PlayScene = (function (_super) {
         __extends(PlayScene, _super);
@@ -16,10 +16,16 @@ define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Ca
             this.mapDisplay = new MapDisplay_1.default(resources);
             this.camera = new Camera_1.default(resources, this.mapDisplay);
             this.menuContainer = new MenuContainer_1.default(resources);
-            this.addChild(this.menuContainer, { pixels: 200, z: 1 });
+            var f1 = new FillContainer_1.default();
+            f1.addChild(new PIXI.Text("hi"));
+            //this.addChild(f1, {pixels:300});
+            this.addChild(this.menuContainer, { pixels: 300, z: 1 });
             this.addChild(this.camera, { weight: 1 });
-            this.mapDisplay.on("click-city", function (city) {
-                _this.menuContainer.showCityMenu(city);
+            this.mapDisplay.on("click", function (e) {
+                var objSelection = e.data.selection;
+                if (City_1.CityUtil.IsCity(objSelection)) {
+                    _this.menuContainer.showCityMenu(e.data.selection);
+                }
             });
             setInterval(function () {
                 var camera = _this.camera;

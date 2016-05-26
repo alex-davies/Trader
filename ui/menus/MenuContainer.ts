@@ -4,13 +4,15 @@ import Util from "../../util/Util";
 import CityMenu from "./CityMenu";
 import Resources from "../Resources";
 import * as PIXI from "pixi.js"
+import DebugDraw from "../controls/DebugDraw";
+import PaddedContainer from "../controls/PaddedContainer";
 
 export default class MenuContainer extends PIXI.Container{
     background:PIXI.extras.TilingSprite;
     backgroundEdge:PIXI.extras.TilingSprite;
 
     currentMenu:PIXI.DisplayObject;
-
+    content:PaddedContainer;
 
 
     renderRect:{x:number,y:number,width:number,height:number};
@@ -18,36 +20,35 @@ export default class MenuContainer extends PIXI.Container{
     constructor(public resources:Resources){
         super();
 
-        this.background = new PIXI.extras.TilingSprite(resources.menuBackground, this.width, this.height);
-        this.addChild(this.background);
 
-        this.backgroundEdge = new PIXI.extras.TilingSprite(resources.menuBorder, resources.menuBorder.width, this.height);
-        this.addChild(this.backgroundEdge);
+        this.background = this.addChild(new PIXI.extras.TilingSprite(resources.menuBackground, this.width, this.height));
+        this.backgroundEdge = this.addChild(new PIXI.extras.TilingSprite(resources.menuBorder, resources.menuBorder.width, this.height));
+
+        this.content = this.addChild(new PaddedContainer(10,10,10,10));
+
+
     }
 
     public setRenderRect(rect:{x:number, y:number, width:number, height:number}){
         this.renderRect = rect;
 
         //we will add some padding to the right to make room for hte shadow line
-        var paddingRight = this.backgroundEdge.texture.width;
+        var edgeWidth = this.backgroundEdge.texture.width;
 
-        this.background.width = rect.width - paddingRight;
+        this.background.width = rect.width - edgeWidth;
         this.background.height = rect.height;
 
         this.backgroundEdge.height = rect.height;
-        this.backgroundEdge.width = paddingRight;
+        this.backgroundEdge.width = edgeWidth;
         this.backgroundEdge.x = this.background.width;
 
-        Util.TrySetRenderRect(this.currentMenu, {x:0,y:0, width:this.background.width, height:rect.height});
+        this.content.setRenderRect(rect);
 
     }
 
     showMenu(newMenu:DisplayObject){
-        this.removeChild(this.currentMenu);
-        this.currentMenu = newMenu;
-        this.addChild(newMenu);
-
-        Util.TrySetRenderRect(this.currentMenu, {x:0,y:0, width:this.background.width, height:this.renderRect.height});
+        this.content.removeChildren();
+        this.content.addChild(newMenu);
     }
 
     showCityMenu(city:City){

@@ -13,8 +13,8 @@ define(["require", "exports", "./tiled/LayerObjectDisplay"], function (require, 
             this.city = city;
             this.tileMap = tileMap;
             this.interactive = true;
-            this.on("click", function () {
-                _this.emit("click-city", city);
+            this.on("click", function (e) {
+                e.data.selection = _this.city;
             });
         }
         return CityDisplay;

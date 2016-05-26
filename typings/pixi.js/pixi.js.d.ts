@@ -218,7 +218,7 @@ declare module PIXI {
         height: number;
 
         addChild<T extends DisplayObject>(child: T): T;
-        addChildAt(child: DisplayObject, index: number): DisplayObject;
+        addChildAt<T extends DisplayObject>(child: T, index: number): T;
         swapChildren(child: DisplayObject, child2: DisplayObject): void;
         getChildIndex(child: DisplayObject): number;
         setChildIndex(child: DisplayObject, index: number): void;

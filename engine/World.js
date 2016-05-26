@@ -19,13 +19,13 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             }
         };
         World.prototype.objectsOfType = function (type) {
-            return this.state.layers
-                .filter(function (layer) { return layer.type === "objectgroup"; })
-                .map(function (layer) { return layer.objects.filter(function (obj) { return obj.type === type; }); })
-                .reduce(function (a1, a2) { return a1.concat(a2); }, []);
+            return Linq.from(this.state.layers)
+                .where(function (layer) { return layer.type === "objectgroup"; })
+                .selectMany(function (layer) { return layer.objects; })
+                .where(function (obj) { return obj.type === type; });
         };
         World.prototype.objectOfType = function (type) {
-            return this.objectsOfType(type)[0];
+            return this.objectsOfType(type).firstOrDefault();
         };
         World.prototype.tileLayers = function () {
             return Linq.from(this.state.layers).where(function (layer) { return layer.type === "tilelayer"; });

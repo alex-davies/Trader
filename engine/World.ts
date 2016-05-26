@@ -30,15 +30,15 @@ export default class World {
         }
     }
     
-    public objectsOfType<T extends Tiled.LayerObject>(type:string) : Array<T>{
-        return <Array<T>>this.state.layers
-            .filter(layer=>layer.type === "objectgroup")
-            .map(layer=>layer.objects.filter(obj=>obj.type === type))
-            .reduce((a1,a2)=>a1.concat(a2),[]);
+    public objectsOfType<T extends Tiled.LayerObject>(type:string) : Linq.IEnumerable<T>{
+        return Linq.from(this.state.layers)
+            .where(layer=>layer.type === "objectgroup")
+            .selectMany(layer=><T[]>layer.objects)
+            .where(obj=>obj.type === type)
     }
 
     public objectOfType<T extends Tiled.LayerObject>(type:string):T{
-        return this.objectsOfType<T>(type)[0];
+        return this.objectsOfType<T>(type).firstOrDefault();
     }
 
     public tileLayers(){

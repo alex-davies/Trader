@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1) {
+define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay", "../../engine/objectTypes/Ship", "./ShipDisplay"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1, Ship_1, ShipDisplay_1) {
     "use strict";
     var MapDisplay = (function (_super) {
         __extends(MapDisplay, _super);
@@ -18,51 +18,21 @@ define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTy
             }
             var map = resources.world.state;
             //load up all our tile layers
-            var tileMap = this.generateTileMap(resources);
-            this.background = this.addChild(new PIXI.extras.TilingSprite(tileMap[1], this.width, this.height));
+            this.background = this.addChild(new PIXI.extras.TilingSprite(resources.tileTextures[1], this.width, this.height));
             resources.world.tileLayers().forEach(function (layer) {
-                var layerDisplay = new TileLayerDisplay_1.default(map, layer, tileMap);
+                var layerDisplay = new TileLayerDisplay_1.default(map, layer, resources.tileTextures);
                 _this.addChild(layerDisplay);
             });
-            resources.world.objectsOfType(City_1.CityType).forEach(function (city) {
-                var cityDisplay = new CityDisplay_1.default(city, tileMap);
+            resources.world.objectsOfType(City_1.CityUtil.TypeName).forEach(function (city) {
+                var cityDisplay = new CityDisplay_1.default(city, resources.tileTextures);
                 _this.addChild(cityDisplay);
-                _this.propogate(cityDisplay, "click-city");
             });
-            // var gx = new PIXI.Graphics();
-            // gx.lineStyle(2,0xFFFFFF,0.1);
-            // for(var row = 0; row<map.height;row++){
-            //     for(var col = 0; col<map.width;col++){
-            //         gx.drawRect(col*map.tilewidth, row*map.tileheight, map.tilewidth, map.tileheight);
-            //     }
-            // }
-            //
-            // this.addChild(gx);
-            this.debugDraw = this.addChild(new PIXI.Graphics());
+            resources.world.objectsOfType(Ship_1.ShipUtil.TypeName).forEach(function (ship) {
+                var cityDisplay = new ShipDisplay_1.default(ship, resources.tileTextures);
+                _this.addChild(cityDisplay);
+            });
+            this.interactive = true;
         }
-        MapDisplay.prototype.propogate = function (emitter, event) {
-            var _me = this;
-            emitter.on(event, function () {
-                [].splice.call(arguments, 0, 0, event);
-                _me.emit.apply(_me, arguments);
-            });
-        };
-        MapDisplay.prototype.generateTileMap = function (resources) {
-            var tileMap = {};
-            this.resources.world.state.tilesets.forEach(function (tileset) {
-                var baseTexture = resources.tileSets[tileset.name];
-                baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-                var subImageIndex = 0;
-                for (var y = tileset.margin; y + tileset.tileheight <= tileset.imageheight; y += tileset.tileheight + tileset.spacing) {
-                    for (var x = tileset.margin; x + tileset.tilewidth <= tileset.imagewidth; x += tileset.tilewidth + tileset.spacing) {
-                        var subImageRectangle = new PIXI.Rectangle(x, y, tileset.tilewidth, tileset.tileheight);
-                        tileMap[tileset.firstgid + subImageIndex] = new PIXI.Texture(baseTexture, subImageRectangle);
-                        subImageIndex++;
-                    }
-                }
-            });
-            return tileMap;
-        };
         MapDisplay.prototype.setRenderRect = function (rect) {
             //we will adjust our background in such a way that the tilings aligns wiht our drawn tiles
             //we will also need to modify the width/height to ensure we still cover the full render area

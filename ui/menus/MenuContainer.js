@@ -3,34 +3,31 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "../../util/Util", "./CityMenu", "pixi.js"], function (require, exports, Util_1, CityMenu_1, PIXI) {
+define(["require", "exports", "./CityMenu", "pixi.js", "../controls/PaddedContainer"], function (require, exports, CityMenu_1, PIXI, PaddedContainer_1) {
     "use strict";
     var MenuContainer = (function (_super) {
         __extends(MenuContainer, _super);
         function MenuContainer(resources) {
             _super.call(this);
             this.resources = resources;
-            this.background = new PIXI.extras.TilingSprite(resources.menuBackground, this.width, this.height);
-            this.addChild(this.background);
-            this.backgroundEdge = new PIXI.extras.TilingSprite(resources.menuBorder, resources.menuBorder.width, this.height);
-            this.addChild(this.backgroundEdge);
+            this.background = this.addChild(new PIXI.extras.TilingSprite(resources.menuBackground, this.width, this.height));
+            this.backgroundEdge = this.addChild(new PIXI.extras.TilingSprite(resources.menuBorder, resources.menuBorder.width, this.height));
+            this.content = this.addChild(new PaddedContainer_1.default(10, 10, 10, 10));
         }
         MenuContainer.prototype.setRenderRect = function (rect) {
             this.renderRect = rect;
             //we will add some padding to the right to make room for hte shadow line
-            var paddingRight = this.backgroundEdge.texture.width;
-            this.background.width = rect.width - paddingRight;
+            var edgeWidth = this.backgroundEdge.texture.width;
+            this.background.width = rect.width - edgeWidth;
             this.background.height = rect.height;
             this.backgroundEdge.height = rect.height;
-            this.backgroundEdge.width = paddingRight;
+            this.backgroundEdge.width = edgeWidth;
             this.backgroundEdge.x = this.background.width;
-            Util_1.default.TrySetRenderRect(this.currentMenu, { x: 0, y: 0, width: this.background.width, height: rect.height });
+            this.content.setRenderRect(rect);
         };
         MenuContainer.prototype.showMenu = function (newMenu) {
-            this.removeChild(this.currentMenu);
-            this.currentMenu = newMenu;
-            this.addChild(newMenu);
-            Util_1.default.TrySetRenderRect(this.currentMenu, { x: 0, y: 0, width: this.background.width, height: this.renderRect.height });
+            this.content.removeChildren();
+            this.content.addChild(newMenu);
         };
         MenuContainer.prototype.showCityMenu = function (city) {
             this.showMenu(new CityMenu_1.default(this.resources, city));

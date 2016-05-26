@@ -2,7 +2,7 @@ import * as Enumerable from "linq"
 export class Properties{
     private static ProductionPrefix = "production.";
     private static InventoryPrefix = "inventory.";
-    
+
     public static ProductionPropertyName(resource:string){
         return this.ProductionPrefix + resource;
     }

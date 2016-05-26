@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import Resources from "../Resources";
 import World from "../../engine/World";
+import DebugDraw from "../controls/DebugDraw";
 
 export default class LoadScene extends PIXI.Container{
     private loadingSprite:PIXI.Sprite;
@@ -34,12 +35,15 @@ export default class LoadScene extends PIXI.Container{
             PIXI.loader
                 .add('gameState', '/assets/maps/demo.json')
                 .add('menuBackground', '/assets/images/backgrounds/parchment.png')
-                .add('menuBorder', '/assets/images/backgrounds/shadow.png').load((loader, loadedResources)=> {
+                .add('menuBorder', '/assets/images/backgrounds/shadow.png')
+                .add('button', '/assets/images/backgrounds/square-button.9.png')
+                .load((loader, loadedResources)=> {
 
                 var resources = new Resources();
                 resources.world = new World(loadedResources.gameState.data);
                 resources.menuBackground = loadedResources.menuBackground.texture;
                 resources.menuBorder = loadedResources.menuBorder.texture;
+                resources.buttonNinePatch = loadedResources.button.texture;
 
                 //we now know the tilests, so we will load each of hte tilesets
                 var baseDirectory = '/assets/maps/';
@@ -49,6 +53,14 @@ export default class LoadScene extends PIXI.Container{
 
 
                 PIXI.loader.load((loader, loadedResources)=>{
+
+                    resources.world.state.tilesets.forEach(tileset=>{
+                        resources.tileSets[tileset.name] = loadedResources[tileset.name].texture
+                    });
+
+                    resources.tileTextures = this.generateTileMap(resources);
+
+
                     var endTime = new Date().getTime();
                     var elapsedTime = endTime-startTime;
                     console.debug('Loaded resources in '+elapsedTime+'ms',loadedResources);
@@ -56,9 +68,7 @@ export default class LoadScene extends PIXI.Container{
                     clearTimeout(showPageTimeout)
 
 
-                    resources.world.state.tilesets.forEach(tileset=>{
-                        resources.tileSets[tileset.name] = loadedResources[tileset.name].texture
-                    });
+
 
 
                     if(pageIsShown){
@@ -86,5 +96,35 @@ export default class LoadScene extends PIXI.Container{
             this.loadingSprite.x = rect.width /2;
             this.loadingSprite.y = rect.height /2;
         }
+    }
+
+
+
+    generateTileMap(resources:Resources):{[gid:number]:PIXI.Texture}{
+        var tileMap:{[gid:number]:PIXI.Texture} = {};
+
+        resources.world.state.tilesets.forEach(tileset=>{
+            var baseTexture = resources.tileSets[tileset.name];
+            baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+
+            var subImageIndex = 0;
+            for(var y=tileset.margin
+                ; y+tileset.tileheight <= tileset.imageheight
+                ; y+=tileset.tileheight+tileset.spacing) {
+
+                for (var x = tileset.margin
+                    ; x + tileset.tilewidth <= tileset.imagewidth
+                    ; x += tileset.tilewidth + tileset.spacing) {
+
+                    var subImageRectangle = new PIXI.Rectangle(x,y,tileset.tilewidth, tileset.tileheight);
+                    tileMap[tileset.firstgid+subImageIndex] = new PIXI.Texture(baseTexture, subImageRectangle);
+
+                    subImageIndex++;
+                }
+            }
+
+        });
+
+        return tileMap;
     }
 }

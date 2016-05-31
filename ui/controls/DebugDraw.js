@@ -20,8 +20,12 @@ define(["require", "exports", "../../util/Util"], function (require, exports, Ut
         DebugDraw.prototype.redraw = function () {
             var _this = this;
             this.graphics.clear();
-            this.debugObjects.forEach(function (obj) {
-                var bounds = obj.displayObject.getLocalBounds();
+            this.debugObjects.forEach(function (obj, i) {
+                if (!_this.isRelatedToDebugDraw(obj.displayObject)) {
+                    _this.debugObjects.slice(i, 1);
+                    return;
+                }
+                var bounds = obj.displayObject.getBounds();
                 var p1 = _this.toLocal(new PIXI.Point(bounds.x, bounds.y), obj.displayObject);
                 var p2 = _this.toLocal(new PIXI.Point(bounds.x + bounds.width, bounds.y + bounds.height), obj.displayObject);
                 _this.graphics.lineStyle(2, obj.color, 1);
@@ -29,17 +33,29 @@ define(["require", "exports", "../../util/Util"], function (require, exports, Ut
             });
         };
         DebugDraw.prototype.drawBounds = function (displayObject, color) {
-            var _this = this;
             if (color === void 0) { color = this.defaultColor(displayObject); }
             var debugObj = {
                 displayObject: displayObject,
                 color: color
             };
-            displayObject.once("removed", function () {
-                var index = _this.debugObjects.indexOf(debugObj);
-                _this.debugObjects.slice(index, 1);
-            });
             this.debugObjects.push(debugObj);
+        };
+        DebugDraw.prototype.isRelatedToDebugDraw = function (item) {
+            var thisAncestors = DebugDraw.getAncestors(this);
+            var itemAncestors = DebugDraw.getAncestors(item);
+            for (var i = 0; i < thisAncestors.length; i++) {
+                if (itemAncestors.indexOf(thisAncestors[i]) >= 0)
+                    return true;
+            }
+            return false;
+        };
+        DebugDraw.getAncestors = function (item) {
+            var ancestors = [];
+            var currentItem = item;
+            while (currentItem = currentItem.parent) {
+                ancestors.push(currentItem);
+            }
+            return ancestors;
         };
         DebugDraw.DrawBounds = function (displayObject, color) {
             DebugDraw.Global.drawBounds(displayObject, color);

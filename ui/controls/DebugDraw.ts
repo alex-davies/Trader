@@ -1,4 +1,5 @@
 import Util from "../../util/Util";
+
 interface DebugObject{
     displayObject:PIXI.DisplayObject;
     color:number;
@@ -25,8 +26,14 @@ export default class DebugDraw extends PIXI.Container{
 
     redraw(){
         this.graphics.clear();
-        this.debugObjects.forEach(obj=>{
-            var bounds = obj.displayObject.getLocalBounds();
+        this.debugObjects.forEach((obj,i)=>{
+
+            if(!this.isRelatedToDebugDraw(obj.displayObject)){
+                this.debugObjects.slice(i,1);
+                return;
+            }
+
+            var bounds = obj.displayObject.getBounds();
 
             var p1 = this.toLocal(new PIXI.Point(bounds.x,bounds.y), obj.displayObject);
             var p2 = this.toLocal(new PIXI.Point(bounds.x + bounds.width,bounds.y+bounds.height), obj.displayObject);
@@ -42,11 +49,28 @@ export default class DebugDraw extends PIXI.Container{
             color:color
         };
 
-        displayObject.once("removed",()=>{
-            let index = this.debugObjects.indexOf(debugObj);
-            this.debugObjects.slice(index,1);
-        });
         this.debugObjects.push(debugObj);
+    }
+
+    isRelatedToDebugDraw(item:PIXI.DisplayObject){
+        let thisAncestors = DebugDraw.getAncestors(this);
+        let itemAncestors = DebugDraw.getAncestors(item);
+
+        for(let i=0;i<thisAncestors.length;i++){
+            if(itemAncestors.indexOf(thisAncestors[i]) >= 0)
+                return true;
+        }
+
+        return false
+    }
+
+    static getAncestors(item:PIXI.DisplayObject):PIXI.DisplayObject[]{
+        let ancestors = [];
+        let currentItem = item;
+        while(currentItem = currentItem.parent) {
+            ancestors.push(currentItem);
+        }
+        return ancestors;
     }
 
     static DrawBounds(displayObject:PIXI.DisplayObject, color?:number){

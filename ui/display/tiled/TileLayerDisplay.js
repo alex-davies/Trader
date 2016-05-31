@@ -10,7 +10,9 @@ define(["require", "exports", 'pixi.js'], function (require, exports, PIXI) {
         function TileLayerDisplay(map, layer, tileMap) {
             _super.call(this);
             for (var i = 0; i < layer.data.length; i++) {
-                var texture = tileMap[layer.data[i]];
+                var gid = layer.data[i];
+                var texture = tileMap[gid];
+                //let properties = 
                 //only draw the item if we actuall yhave a texture
                 if (texture) {
                     var tileCol = i % layer.width;

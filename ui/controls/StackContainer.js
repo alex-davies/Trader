@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, exports, PIXI, Util_1) {
+define(["require", "exports", 'pixi.js', "./UIContainer"], function (require, exports, PIXI, UIContainer_1) {
     "use strict";
     var DisplayObject = PIXI.DisplayObject;
     var StackContainer = (function (_super) {
@@ -14,8 +14,6 @@ define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, 
             _super.call(this);
             this.orientation = orientation;
             this.spacing = spacing;
-            this.primaryDimension = this.orientation === "horizontal" ? "width" : "height";
-            this.primaryAxis = this.orientation === "horizontal" ? "x" : "y";
             this.nextCellOrder = 1;
             // this.renderRect = {x:0,y:0,width:this.width,height:this.height}
             this.onChildrenChange = function () {
@@ -23,6 +21,34 @@ define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, 
                 _this.children.sort(function (c1, c2) { return (_this.getChildCellSize(c1).z || 0) - (_this.getChildCellSize(c2).z || 0); });
             };
         }
+        Object.defineProperty(StackContainer.prototype, "primaryDimension", {
+            get: function () {
+                return this.orientation === "horizontal" ? "width" : "height";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackContainer.prototype, "secondaryDimension", {
+            get: function () {
+                return this.orientation === "horizontal" ? "height" : "width";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackContainer.prototype, "primaryAxis", {
+            get: function () {
+                return this.orientation === "horizontal" ? "x" : "y";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackContainer.prototype, "secondaryAxis", {
+            get: function () {
+                return this.orientation === "horizontal" ? "y" : "x";
+            },
+            enumerable: true,
+            configurable: true
+        });
         StackContainer.prototype.isPixelSize = function (size) {
             return !!size.pixels;
         };
@@ -40,119 +66,51 @@ define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, 
         StackContainer.prototype.setChildCellSize = function (child, cellSize) {
             child._cellSize = cellSize;
         };
-        // private getChildSizeInPixels(child:PIXI.DisplayObject){
-        //     let size = this.getChildCellSize(child);
-        //
-        //     if(this.isPixelSize(size)){
-        //         return size.pixels
-        //     }
-        //
-        //     if(this.isWeightSize(size)){
-        //         var pixelsUsed = 0;
-        //         var totalWeight = 0;
-        //         this.children.forEach(child=>{
-        //             let size = this.getChildCellSize(child);
-        //             if(this.isWeightSize(size)) {
-        //                totalWeight += size.weight
-        //             }
-        //             else{
-        //                 pixelsUsed += this.getChildSizeInPixels(child);
-        //             }
-        //         });
-        //
-        //         pixelsUsed += (this.children.length-1) * this.spacing;
-        //
-        //         let totalWeightWidth = this.renderRect[this.primaryDimension] - pixelsUsed;
-        //
-        //         return Math.round(totalWeightWidth * size.weight / totalWeight);
-        //     }
-        //
-        //     if(this.isFlexibleSize(size)){
-        //         return (<any>child)[this.primaryDimension] || 0;
-        //     }
-        //
-        //     return 0;
-        // }
-        // relayout(){
-        //
-        //     clearTimeout((this.relayoutTimeout));
-        //     this.relayoutTimeout = null;
-        //
-        //     let runningOffset = 0;
-        //     let childrenInCellOrder = this.children.slice().sort((c1,c2)=>{
-        //         return (this.getChildCellSize(c1).order || this.nextCellOrder) - (this.getChildCellSize(c2).order || this.nextCellOrder)
-        //     });
-        //
-        //     childrenInCellOrder.forEach(child=>{
-        //         let sizeInPixels = this.getChildSizeInPixels(child);
-        //
-        //         //set the X or Y to be the offset
-        //         child[this.primaryAxis] = runningOffset;
-        //
-        //         //let the child know of its space that it should use for rendering
-        //         var childRenderRect = {x:0,y:0,width:this.renderRect.width, height:this.renderRect.height};
-        //         childRenderRect[this.primaryDimension] = sizeInPixels;
-        //         Util.TrySetRenderRect(child, childRenderRect);
-        //
-        //         runningOffset += sizeInPixels + this.spacing;
-        //     });
-        // }
         StackContainer.prototype.relayout = function () {
             var _this = this;
-            if (this.renderRect == null)
-                return;
             var childrenInCellOrder = this.children.slice().sort(function (c1, c2) {
                 return (_this.getChildCellSize(c1).order || _this.nextCellOrder) - (_this.getChildCellSize(c2).order || _this.nextCellOrder);
             });
             //we will run through all the children and gather some data about the sizing
-            var totalFixedSize = 0;
+            var totalPixelSize = 0;
+            var totalFlexSize = 0;
             var totalWeight = 0;
             childrenInCellOrder.forEach(function (child) {
                 var cellSize = _this.getChildCellSize(child);
                 if (_this.isPixelSize(cellSize)) {
-                    totalFixedSize += cellSize.pixels;
+                    totalPixelSize += cellSize.pixels;
                 }
                 else if (_this.isFlexibleSize(cellSize)) {
-                    //for flex size we will run set render rect first then get the size. the child
-                    //can take all the size if he wants to
-                    var childRenderRect = { x: 0, y: 0, width: _this.renderRect.width, height: _this.renderRect.height };
-                    childRenderRect[_this.primaryDimension] = Math.max(0, childRenderRect[_this.primaryDimension] - totalFixedSize);
-                    Util_1.default.TrySetRenderRect(child, childRenderRect);
-                    totalFixedSize += child[_this.primaryDimension];
+                    totalFlexSize += child[_this.primaryDimension];
                 }
                 else if (_this.isWeightSize(cellSize)) {
                     totalWeight += cellSize.weight;
                 }
             });
             //now we will do the real run through setting everyones x/y and sizes
-            //we will also set render rects for the other non flexi cells
             var runningOffset = 0;
             childrenInCellOrder.forEach(function (child) {
                 var cellSize = _this.getChildCellSize(child);
                 child[_this.primaryAxis] = runningOffset;
                 if (_this.isPixelSize(cellSize)) {
-                    var actualSize = Math.max(0, Math.min(cellSize.pixels, _this.renderRect[_this.primaryDimension] - runningOffset));
-                    var childRenderRect = { x: 0, y: 0, width: _this.renderRect.width, height: _this.renderRect.height };
-                    childRenderRect[_this.primaryDimension] = actualSize;
-                    Util_1.default.TrySetRenderRect(child, childRenderRect);
+                    var actualSize = Math.max(0, Math.min(cellSize.pixels, _this[_this.primaryDimension] - runningOffset));
+                    child[_this.primaryDimension] = actualSize;
+                    child[_this.secondaryDimension] = _this[_this.secondaryDimension];
                     runningOffset += actualSize;
                 }
                 else if (_this.isFlexibleSize(cellSize)) {
+                    child[_this.secondaryDimension] = _this[_this.secondaryDimension];
                     runningOffset += child[_this.primaryDimension];
                 }
                 else if (_this.isWeightSize(cellSize)) {
-                    var totalWeightSize = Math.max(0, _this.renderRect[_this.primaryDimension] - totalFixedSize);
+                    var totalWeightSize = Math.max(0, _this[_this.primaryDimension] - totalPixelSize - totalFlexSize);
                     var actualSize_1 = Math.round(cellSize.weight / totalWeight * totalWeightSize);
-                    var childRenderRect = { x: 0, y: 0, width: _this.renderRect.width, height: _this.renderRect.height };
-                    childRenderRect[_this.primaryDimension] = actualSize_1;
-                    Util_1.default.TrySetRenderRect(child, childRenderRect);
+                    child[_this.primaryDimension] = actualSize_1;
+                    child[_this.secondaryDimension] = _this[_this.secondaryDimension];
                     runningOffset += actualSize_1;
                 }
+                runningOffset += _this.spacing;
             });
-        };
-        StackContainer.prototype.setRenderRect = function (rect) {
-            this.renderRect = rect;
-            this.relayout();
         };
         StackContainer.prototype.cells = function (children) {
             var _this = this;
@@ -221,7 +179,7 @@ define(["require", "exports", 'pixi.js', "../../util/Util"], function (require, 
             return result;
         };
         return StackContainer;
-    }(PIXI.Container));
+    }(UIContainer_1.default));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = StackContainer;
     var VContainer = (function (_super) {

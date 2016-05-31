@@ -13,146 +13,130 @@ import {Spacer} from "../controls/StackContainer";
 import {Ship, ShipUtil} from "../../engine/objectTypes/Ship";
 import NinePatch from "../controls/NinePatch";
 import FillContainer from "../controls/FillContainer";
+import UIText from "../controls/UIText";
+import UISprite from "../controls/UISprite";
+import AlignContainer from "../controls/AlignContainer";
+import UIButton from "../controls/UIButton";
+import UIContainer from "../controls/UIContainer";
+import ShipBuyResource from "../../engine/commands/ShipBuyResource";
+
+
+interface DataBoundUIElement extends PIXI.DisplayObject{
+    refreshDataBindings();
+}
 
 export default class CityMenu extends VContainer{
-    content:PIXI.Container;
-    textOptions = {font: "bold 20px Tahoma, Geneva, sans-serif", fill: "#333", align: "center"};
+
 
     constructor(public resources:Resources, public city:City){
         super(20);
 
-        this.content = new VContainer();
-        this.addChild(this.content);
-
-
-        var updateFn = this.update.bind(this);
+        var updateFn = this.refreshDataBindings.bind(this);
         this.on("added",()=>{
-            this.update();
-            //this.resources.world.onCommand(CityHarvest, updateFn)
+            this.refreshDataBindings();
+            this.resources.world.onCommands([CityHarvest, ShipBuyResource], updateFn)
         });
 
         this.on("removed", ()=>{
-            this.resources.world.offCommand(CityHarvest, updateFn)
+            this.resources.world.offCommands([CityHarvest,ShipBuyResource], updateFn)
         })
 
 
-        this.update();
+        this.refreshDataBindings();
 
     }
 
-    update() {
+    buildDataBoundResourceRow(ship:Ship, resourceMeta:Resource):DataBoundUIElement{
+        let cityAmountText:UIText;
+        let shipAmountText:UIText;
+        
+        let buyButton:UIButton = new UIButton(this.resources.button, new UIText("Buy"),()=>{
+            this.resources.world.issueCommand(new ShipBuyResource(ship,this.city,resourceMeta))
+        });
+        
+        let sellButton:UIButton  = new UIButton(this.resources.button, new UIText("Sell"),()=>{
+            this.resources.world.issueCommand(new ShipBuyResource(ship,this.city,resourceMeta))
+        });;
+
+        let row = <HContainer & DataBoundUIElement>new HContainer().cells([
+            [{flexible:true}, this.buildIcon(resourceMeta, 1.8)],
+            [{pixels:20}, new Spacer()],
+            [{weight:1}, new VContainer().cells([
+                [{weight:1}, new HContainer().cells([
+                    [{flexible:true},this.buildIconFromTexture(this.resources.cityIcon)],
+                    [{weight:1}, cityAmountText = new UIText("")],
+                    [{weight:2}, sellButton]
+                ])],
+                [{weight:1}, new HContainer().cells([
+                    [{flexible:true},this.buildIcon(ship)],
+                    [{weight:1}, shipAmountText = new UIText("")],
+                    [{weight:2}, buyButton]
+                ])]
+            ])]
+        ]);
+
+        row.refreshDataBindings = ()=>{
+
+            let inventoryName = Properties.InventoryPropertyName(resourceMeta.name);
+            cityAmountText.text.text = this.city.properties[inventoryName]  || 0+ "";
+            shipAmountText.text.text = ship.properties[inventoryName] || 0 + ""
+            cityAmountText.relayout();
+            shipAmountText.relayout();
+        };
+
+        return row;
+    }
+
+    rowCache:{[resourceName:string]:DataBoundUIElement} = {}
+
+    refreshDataBindings() {
 
         let resourceMetas = this.resources.world.objectsOfType<Resource>(ResourceUtil.TypeName).toDictionary(r=>r.name);
 
         let ship = this.resources.world.objectOfType<Ship>(ShipUtil.TypeName);
-        let textOptions = {font: "bold 20px Tahoma, Geneva, sans-serif", fill: "#333", align: "center"};
+
         this.removeChildren();
 
+        this.addChild(new UIText(`${ShipUtil.TotalResources(ship)} / ${ship.properties.resourceLimit}`))
 
-        if (this.city) {
-            this.addChild(new PIXI.Text(this.city.name, textOptions));
+        Linq.from(this.city.properties).where(kvp=>Properties.IsInventory(kvp.key)).forEach(kvp=> {
+            var resourceName = Properties.InventoryResourceName(kvp.key);
+            var resourceAmount = kvp.value;
+            var resourceMeta = resourceMetas.get(resourceName);
 
-            // let hcontainer = this.addChild(new HContainer(),{pixels:200}).withChildren([
-            //     new PIXI.Text("Hello"),
-            //     [new VContainer().withChildren([
-            //         [new FillContainer(), {weight:1}],
-            //         [new FillContainer(), {weight:1}]
-            //     ]),{weight:1}]
-            // ]);
+            this.rowCache[resourceName] = this.rowCache[resourceName] || this.buildDataBoundResourceRow(ship, resourceMeta);
 
+            let rowItem = this.rowCache[resourceName];
+            rowItem.refreshDataBindings();
+            this.cell({pixels:70}, rowItem);
 
-            Linq.from(this.city.properties).where(kvp=>Properties.IsInventory(kvp.key)).take(1).forEach(kvp=> {
-                var resourceName = Properties.InventoryResourceName(kvp.key);
-                var resourceAmount = kvp.value;
-                var resourceMeta = resourceMetas.get(resourceName);
+        });
 
-                // this.cell({pixels: 100}, new HContainer().cells([
-                //     [{weight: 1}, new PIXI.Text("one")],
-                //     [{weight: 1}, new PIXI.Text("two")]
-                // ]));
-
-               this.cell(
-                   {pixels:70}, new HContainer().cells([
-                       [{flexible:true}, this.buildIcon(resourceMeta, 2)],
-                       [{pixels:20}, new Spacer()],
-                       [{weight:1}, new VContainer().cells([
-                           [{weight:1}, new HContainer().cells([
-                               [{flexible:true},new FillContainer().withChild(this.buildIcon(this.city))],
-                               [{weight:1}, new FillContainer().withChild(new PIXI.Text(resourceAmount, textOptions))],
-                               [{weight:2}, this.buildSellButton()]
-                           ])],
-                           [{weight:1}, new HContainer().cells([
-                               [{flexible:true},new FillContainer().withChild(this.buildIcon(ship))],
-                               [{weight:1}, new FillContainer().withChild(new PIXI.Text("???", textOptions))],
-                               [{weight:2}, this.buildBuyButton()]
-                           ])]
-                       ])]
-               ]));
-
-
-            });
-            //    this.cell(
-            //        {pixels:70}, new HContainer().cells([
-            //            [{flexible:true}, this.buildIcon(resourceMeta, 2)],
-            //            [{pixels:20}, new Spacer()],
-            //            [{weight:1}, new VContainer().cells([
-            //                [{weight:1}, new HContainer().cells([
-            //                    [{flexible:true},this.buildIcon(this.city)],
-            //                    [{weight:1}, new PIXI.Text(resourceAmount, textOptions)],
-            //                    [{weight:2}, this.buildSellButton()]
-            //                ])],
-            //                [{weight:1}, new HContainer().cells([
-            //                    [{flexible:true},this.buildIcon(ship)],
-            //                    [{weight:1}, new PIXI.Text("???", textOptions)],
-            //                    [{weight:2}, this.buildBuyButton()]
-            //                ])]
-            //            ])]
-            //    ]));
-            //
-            // });
-
-
-            //this.relayout();
-        }
     }
 
-    buildBuyButton(){
-        var button = new NinePatch().loadFromAndroidImage(this.resources.buttonNinePatch);
-        var text = new PIXI.Text("-$5", this.textOptions);
-        
-        var fillContaienr = new FillContainer();
-        fillContaienr.addChild(text);
 
-        //return fillContaienr;
-        button.addChild(fillContaienr);
-
-        button.relayout();
-        
-        //button.relayout();
-        //button.addChild(text);
-
-
-       return button;
-    }
 
     buildSellButton(){
-        // var button = new NinePatch().loadFromAndroidImage(this.resources.buttonNinePatch);
-        // button.addChild(new PIXI.Text("$5", this.textOptions));
-
-        // return button;
-
-        return new PIXI.Text("$5", this.textOptions);
+        let button = new UIButton(this.resources.button, new UIText("Sell"),()=>{
+            console.log("sell");
+        });
+        return button;
     }
 
     buildIcon(obj:{gid:number}, scale = 1):PIXI.DisplayObject{
         if(obj.gid){
-            let sprite = new PIXI.Sprite(this.resources.tileTextures[obj.gid]);
-            sprite.scale.set(scale,scale);
-            return sprite;
+            return this.buildIconFromTexture(this.resources.tileTextures[obj.gid]);
         }
         else{
             return new PIXI.Text(obj.gid+"")
         }
+    }
+
+    buildIconFromTexture(texture:PIXI.Texture, scale = 1){
+        let sprite = new UISprite(texture);
+        sprite.sprite.scale.set(scale,scale);
+        sprite.relayout();
+        return sprite;
     }
 
 

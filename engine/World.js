@@ -1,4 +1,4 @@
-define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq", "./commands/CityHarvest", "eventemitter3"], function (require, exports, Player_1, Util_1, Linq, CityHarvest_1, EventEmitter) {
+define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City", "../util/Util", "linq", "./commands/CityHarvest", "eventemitter3", "./commands/DataCleanse"], function (require, exports, Player_1, City_1, Util_1, Linq, CityHarvest_1, EventEmitter, DataCleanse_1) {
     "use strict";
     var World = (function () {
         function World(state) {
@@ -9,8 +9,9 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             this.clock = new Clock();
             this.commandEmitter = new EventEmitter();
             this.clock.every(2000, function () {
-                _this.IssueCommand(new CityHarvest_1.default());
+                _this.issueCommand(new CityHarvest_1.default());
             });
+            this.issueCommand(new DataCleanse_1.default());
         }
         World.prototype.player = function () {
             var existingPlayer = this.objectOfType(Player_1.PlayerType);
@@ -67,7 +68,7 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             var col = Math.floor(point.x / this.state.tilewidth);
             return this.state.width * row + col;
         };
-        World.prototype.tileGidsInRect = function (tileLayer, rect) {
+        World.prototype.getTileIndexesInRect = function (rect) {
             var startTilePosition = {
                 x: Math.round(rect.x / this.state.tilewidth),
                 y: Math.round(rect.y / this.state.tileheight)
@@ -79,7 +80,7 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             var result = [];
             for (var row = startTilePosition.y; row < endTilePosition.y; row++) {
                 for (var col = startTilePosition.x; col < endTilePosition.x; col++) {
-                    result.push(tileLayer.data[this.state.width * row + col]);
+                    result.push(this.state.width * row + col);
                 }
             }
             return Linq.from(result);
@@ -88,11 +89,34 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             return this.getTilePropertiesFromGid(layer.data[tileIndex]);
         };
         World.prototype.getTilePropertiesFromGid = function (gid) {
+            //TODO: this gets called a lot, should cache gid->properties
             var tilesetsWithGid = Linq.from(this.state.tilesets).where(function (tileset) { return tileset.tileproperties && tileset.tileproperties.hasOwnProperty(gid - tileset.firstgid + ""); });
             return Linq.from(this.state.tilesets)
                 .where(function (tileset) { return tileset.tileproperties && tileset.tileproperties.hasOwnProperty(gid - tileset.firstgid + ""); })
                 .select(function (tileset) { return tileset.tileproperties[gid - tileset.firstgid + ""]; })
                 .firstOrDefault() || {};
+        };
+        World.prototype.getGidStack = function (tileIndex) {
+            return this.tileLayers().select(function (layer) {
+                return layer.data[tileIndex];
+            }).where(function (gid) { return gid !== 0; });
+        };
+        World.prototype.isIndexPartOfCity = function (tileIndex) {
+            var _this = this;
+            return this.getGidStack(tileIndex)
+                .select(function (gid) { return _this.getTilePropertiesFromGid(gid); })
+                .any(function (prop) { return prop.isPartOfCity; });
+        };
+        World.prototype.cityOrNull = function (point) {
+            var _this = this;
+            var tileIndex = this.getTileIndex(point);
+            if (!this.isIndexPartOfCity(tileIndex)) {
+                return null;
+            }
+            var partOfCityIndexes = this.getExtendedNeighbours(tileIndex, function (index) { return _this.isIndexPartOfCity(index); });
+            var city = this.objectsOfType(City_1.CityUtil.TypeName).firstOrDefault(function (city) {
+                return _this.getTileIndexesInRect(city).intersect(partOfCityIndexes).any();
+            });
         };
         World.prototype.onCommand = function (clazz, callback) {
             var typeName = Util_1.default.FunctionName(clazz);
@@ -110,7 +134,7 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             var _this = this;
             clazzes.forEach(function (clazz) { return _this.offCommand(clazz, callback); });
         };
-        World.prototype.IssueCommand = function () {
+        World.prototype.issueCommand = function () {
             var _this = this;
             var commands = [];
             for (var _i = 0; _i < arguments.length; _i++) {

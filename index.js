@@ -5,8 +5,8 @@ define(["require", "exports", "./ui/scenes/SceneManager", "./ui/scenes/LoadScene
     container.style.height = "100%";
     document.body.appendChild(container);
     var sceneManager = new SceneManager_1.SceneManager(container);
+    //sceneManager.setScene(new StackContainerDebugScene());
     sceneManager.setScene(new LoadScene_1.default(function (resources) {
-        //sceneManager.setScene(new DebugScene())
         sceneManager.setScene(new PlayScene_1.default(resources));
     }));
 });

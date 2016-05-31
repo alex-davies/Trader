@@ -41,7 +41,7 @@
 //             if(closestMarkerDisplay) {
 //
 //                 var command = new ShipTravelCommand(shipDisplay.entity.id, closestMarkerDisplay.entity.id)
-//                 worldDisplay.world.IssueCommand(command)
+//                 worldDisplay.world.issueCommand(command)
 //             }
 //         }
 //     }

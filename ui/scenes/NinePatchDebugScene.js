@@ -137,4 +137,4 @@ define(["require", "exports", 'pixi.js', "../controls/NinePatch"], function (req
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = DebugScene;
 });
-//# sourceMappingURL=DebugScene.js.map
+//# sourceMappingURL=NinePatchDebugScene.js.map

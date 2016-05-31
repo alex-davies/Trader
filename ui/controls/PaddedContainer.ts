@@ -1,11 +1,12 @@
 import * as PIXI from "pixi.js"
 import Util from "../../util/Util";
 import RenderRectContainer from "./RenderRectContainer";
+import UIContainer from "./UIContainer";
 
-export default class PaddedContainer extends RenderRectContainer{
+export default class PaddedContainer extends UIContainer{
     set paddingTop(value:number){
         this.pivot.y = -value;
-        this.resetChildRenderRectTransform();
+        this.relayout();
     }
     get paddingTop(){
         return -this.pivot.y;
@@ -13,7 +14,7 @@ export default class PaddedContainer extends RenderRectContainer{
 
     set paddingLeft(value:number){
         this.pivot.x = -value;
-        this.resetChildRenderRectTransform();
+        this.relayout();
     }
     get paddingLeft(){
         return -this.pivot.x;
@@ -22,7 +23,7 @@ export default class PaddedContainer extends RenderRectContainer{
     private _paddingRight:number;
     set paddingRight(value:number){
         this._paddingRight = value;
-        this.resetChildRenderRectTransform();
+        this.relayout();
     }
     get paddingRight(){
         return this._paddingRight;
@@ -31,7 +32,7 @@ export default class PaddedContainer extends RenderRectContainer{
     private _paddingBottom:number;
     set paddingBottom(value:number){
         this._paddingBottom = value;
-        this.resetChildRenderRectTransform();
+        this.relayout();
     }
     get paddingBottom(){
         return this._paddingBottom;
@@ -45,17 +46,15 @@ export default class PaddedContainer extends RenderRectContainer{
         this._paddingBottom = paddingBottom;
         this.pivot.x = -paddingLeft;
 
-        this.resetChildRenderRectTransform();
     }
 
-    private resetChildRenderRectTransform(){
-        this.childRenderRectTransform = rect=> {
-            return {
-                x: rect.x,
-                y: rect.y,
-                width: rect.width - this.paddingLeft - this.paddingRight,
-                height: rect.height - this.paddingTop - this.paddingBottom
-            }
-        }
+    relayout() {
+        this.children.forEach(child=>{
+            let anyChild = <any>child
+            if(anyChild.width != null)
+                anyChild.width = this.width - this.paddingLeft - this.paddingRight;
+            if(anyChild.height != null)
+                anyChild.height = this.height - this.paddingTop - this.paddingBottom;
+        });
     }
 }

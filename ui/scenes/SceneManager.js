@@ -1,4 +1,4 @@
-define(["require", "exports", 'pixi.js', "../../util/Util", "../controls/DebugDraw"], function (require, exports, PIXI, Util_1, DebugDraw_1) {
+define(["require", "exports", 'pixi.js', "../controls/DebugDraw", "tween.js"], function (require, exports, PIXI, DebugDraw_1, TWEEN) {
     "use strict";
     var SceneManager = (function () {
         function SceneManager(htmlContainer) {
@@ -21,10 +21,13 @@ define(["require", "exports", 'pixi.js', "../../util/Util", "../controls/DebugDr
         SceneManager.prototype.setScene = function (scene) {
             this.container.removeChild(this.currentScene);
             this.currentScene = this.container.addChildAt(scene, 0);
-            Util_1.default.TrySetRenderRect(scene, { x: 0, y: 0, width: this.renderer.width, height: this.renderer.height });
+            scene.width = this.renderer.width;
+            scene.height = this.renderer.height;
+            //Util.TrySetRenderRect(scene, {x:0,y:0,width:this.renderer.width, height:this.renderer.height});
         };
         SceneManager.prototype.animate = function () {
             var _this = this;
+            TWEEN.update();
             this.renderer.render(this.container);
             window.requestAnimationFrame(function () { return _this.animate(); });
         };

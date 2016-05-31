@@ -3,6 +3,7 @@ import Sprite = PIXI.Sprite;
 import DisplayObject = PIXI.DisplayObject;
 import Util from "../../util/Util";
 import DebugDraw from "./DebugDraw";
+import UIContainer from "./UIContainer";
 
 export default class NinePatch extends PIXI.Container{
 
@@ -48,14 +49,25 @@ export default class NinePatch extends PIXI.Container{
         this.loadFromPatchArray(patches);
     }
 
+    public get width() { return this.content.width + this.paddingLeft + this.paddingRight;}
+    public set width(value:number) {
+        this.content.width = Math.max(0,value - this.paddingLeft - this.paddingRight);
+        this.relayout();
+    }
+    public get height() { return this.content.height + this.paddingTop + this.paddingBottom;}
+    public set height(value:number) {
+        this.content.height = Math.max(0,value - this.paddingTop - this.paddingBottom);
+        this.relayout();
+    }
 
-    constructor(){
+
+    constructor(content:PIXI.Container = new PIXI.Container()){
         super();
 
         //add our content, this should always be the last child
         //we will also listen to new children on our content and
         //relayout, new children usually mean the size will change
-        this.content = super.addChild(new PIXI.Container());
+        this.content = super.addChild(content);
         (<any>this.content).onChildrenChange = ()=>{
             this.relayout();
         };
@@ -229,13 +241,6 @@ export default class NinePatch extends PIXI.Container{
         this.content.x = this.paddingLeft;
         this.content.y = this.paddingTop;
 
-        if(this.renderRect != null) {
-            let childRenderRect = this.childRenderRect();
-            this.content.children.forEach(child=> {
-                Util.TrySetRenderRect(child, childRenderRect);
-            });
-        }
-
         let targetWidth = this.content.width + this.paddingLeft + this.paddingRight;
         let targetHeight = this.content.height + this.paddingTop + this.paddingBottom;
 
@@ -269,22 +274,14 @@ export default class NinePatch extends PIXI.Container{
         }
     }
 
-    renderRect:{x:number,y:number,width:number,height: number};
-
-    public setRenderRect(rect:{x:number, y:number, width:number, height:number}){
-        this.renderRect = rect;
-
-        this.relayout();
+    getBounds(){
+        return new PIXI.Rectangle(
+            0,
+            0,
+            this.content.width + this.paddingLeft+this.paddingRight,
+            this.content.height+this.paddingTop+this.paddingBottom);
     }
 
-    private childRenderRect(){
-        return {
-            x:0,
-            y:0,
-            width:this.renderRect.width - this.paddingLeft - this.paddingRight,
-            height:this.renderRect.height - this.paddingTop - this.paddingBottom
-        };
-    }
 
     get contentChildren(){
         //the children array is the only thing I cant forward requests as PIXI uses it internally

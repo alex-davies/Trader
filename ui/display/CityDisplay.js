@@ -8,14 +8,10 @@ define(["require", "exports", "./tiled/LayerObjectDisplay"], function (require, 
     var CityDisplay = (function (_super) {
         __extends(CityDisplay, _super);
         function CityDisplay(city, tileMap) {
-            var _this = this;
             _super.call(this, city, tileMap);
             this.city = city;
             this.tileMap = tileMap;
             this.interactive = true;
-            this.on("click", function (e) {
-                e.data.selection = _this.city;
-            });
         }
         return CityDisplay;
     }(LayerObjectDisplay_1.default));

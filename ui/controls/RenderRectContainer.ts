@@ -41,11 +41,11 @@ export default class RenderRectContainer extends PIXI.Container {
         this.children.forEach(child=>Util.TrySetRenderRect(child, childRenderRect));
     }
 
-    withChild<T extends PIXI.DisplayObject>(child:T):T{
+    withChild<T extends PIXI.DisplayObject>(child:T):this{
         let result = this.addChild.apply(this, arguments);
         return this;
     }
-        
+
     addChild<T extends PIXI.DisplayObject>(child:T):T{
         let result = super.addChild.apply(this, arguments);
         this.setChildRenderRect(child);

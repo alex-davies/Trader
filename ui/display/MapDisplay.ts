@@ -7,6 +7,7 @@ import EventEmitter = PIXI.EventEmitter;
 import Graphics = PIXI.Graphics;
 import {ShipUtil, Ship} from "../../engine/objectTypes/Ship";
 import ShipDisplay from "./ShipDisplay";
+import {TileProperties} from "../../engine/objectTypes/TileProperties";
 export default class MapDisplay extends PIXI.Container{
 
     background:PIXI.extras.TilingSprite;
@@ -43,6 +44,24 @@ export default class MapDisplay extends PIXI.Container{
         });
         this.interactive = true;
 
+        this.on("click", this.onClick, this);
+    }
+
+    onClick(e){
+        let world = this.resources.world;
+        let localPoint = this.toLocal(e.data.global);
+
+        let tileIndex = this.resources.world.getTileIndex(localPoint);
+        let partOfCityIndexes = world.getExtendedNeighbours(tileIndex, index=>world.isIndexPartOfCity(index));
+        if(!partOfCityIndexes.any()){
+            return;
+        }
+
+        let city = world.objectsOfType<City>(CityUtil.TypeName).firstOrDefault(city=>{
+            return world.getTileIndexesInRect(city).intersect(partOfCityIndexes).any();
+        });
+        
+        e.data.selection = city
     }
 
 
@@ -67,7 +86,7 @@ export default class MapDisplay extends PIXI.Container{
         this.background.height = rect.height + yAdjustment;
     }
 
-    getLocalBounds(){
+    getBounds(){
         let worldState = this.resources.world.state;
         return new PIXI.Rectangle(0,0,worldState.width * worldState.tilewidth, worldState.height* worldState.tileheight);
     }

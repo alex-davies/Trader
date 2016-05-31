@@ -11,6 +11,8 @@ import MenuContainer from "../menus/MenuContainer";
 import CityHarvest from "../../engine/commands/CityHarvest";
 import DebugDraw from "../controls/DebugDraw";
 import FillContainer from "../controls/FillContainer";
+import UIContainer from "../controls/UIContainer";
+import Container = PIXI.Container;
 
 
 
@@ -32,10 +34,26 @@ export default class PlayScene extends HContainer{
         this.camera = new Camera(resources, this.mapDisplay);
         this.menuContainer = new MenuContainer(resources);
 
-let f1 = new FillContainer();
-        f1.addChild(new PIXI.Text("hi"));
+        // let f1 = new UIContainer({horizontalAlign:"right"});
+        // f1.width = 600;
+        // f1.height = 900;
+        // f1.addChild(new PIXI.Text("hi"));
+        // this.addChild(f1, {pixels:300});
 
-        //this.addChild(f1, {pixels:300});
+        // let c = this.addChild(new Container());
+        // let t = c.addChild(new PIXI.Text("hi"));
+        //
+        // let bounds = c.getBounds();
+        // let localBounds = c.getLocalBounds();
+        //
+        // t.x = 100;
+        // t.y = 100;
+        // let bounds2 = c.getBounds();
+        // let localBounds2 = c.getLocalBounds();
+        // debugger;
+
+
+
         this.addChild(this.menuContainer, {pixels: 300, z: 1});
         this.addChild(this.camera, {weight: 1});
 

@@ -3,13 +3,14 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "pixi.js", "../../util/Util"], function (require, exports, PIXI, Util_1) {
+define(["require", "exports", "pixi.js"], function (require, exports, PIXI) {
     "use strict";
     var Sprite = PIXI.Sprite;
     var NinePatch = (function (_super) {
         __extends(NinePatch, _super);
-        function NinePatch() {
+        function NinePatch(content) {
             var _this = this;
+            if (content === void 0) { content = new PIXI.Container(); }
             _super.call(this);
             this.patchSprites = [];
             this.totalStretchableWidth = 0;
@@ -23,7 +24,7 @@ define(["require", "exports", "pixi.js", "../../util/Util"], function (require, 
             //add our content, this should always be the last child
             //we will also listen to new children on our content and
             //relayout, new children usually mean the size will change
-            this.content = _super.prototype.addChild.call(this, new PIXI.Container());
+            this.content = _super.prototype.addChild.call(this, content);
             this.content.onChildrenChange = function () {
                 _this.relayout();
             };
@@ -64,6 +65,24 @@ define(["require", "exports", "pixi.js", "../../util/Util"], function (require, 
             get: function () { return this._patches; },
             set: function (patches) {
                 this.loadFromPatchArray(patches);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(NinePatch.prototype, "width", {
+            get: function () { return this.content.width + this.paddingLeft + this.paddingRight; },
+            set: function (value) {
+                this.content.width = Math.max(0, value - this.paddingLeft - this.paddingRight);
+                this.relayout();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(NinePatch.prototype, "height", {
+            get: function () { return this.content.height + this.paddingTop + this.paddingBottom; },
+            set: function (value) {
+                this.content.height = Math.max(0, value - this.paddingTop - this.paddingBottom);
+                this.relayout();
             },
             enumerable: true,
             configurable: true
@@ -208,12 +227,6 @@ define(["require", "exports", "pixi.js", "../../util/Util"], function (require, 
         NinePatch.prototype.relayout = function () {
             this.content.x = this.paddingLeft;
             this.content.y = this.paddingTop;
-            if (this.renderRect != null) {
-                var childRenderRect_1 = this.childRenderRect();
-                this.content.children.forEach(function (child) {
-                    Util_1.default.TrySetRenderRect(child, childRenderRect_1);
-                });
-            }
             var targetWidth = this.content.width + this.paddingLeft + this.paddingRight;
             var targetHeight = this.content.height + this.paddingTop + this.paddingBottom;
             //we wont let the target height be smaller than the original 9patches
@@ -241,17 +254,8 @@ define(["require", "exports", "pixi.js", "../../util/Util"], function (require, 
                 runningYOffset += this.patchColCount > 0 ? this.patchSprites[row][0].height : 0;
             }
         };
-        NinePatch.prototype.setRenderRect = function (rect) {
-            this.renderRect = rect;
-            this.relayout();
-        };
-        NinePatch.prototype.childRenderRect = function () {
-            return {
-                x: 0,
-                y: 0,
-                width: this.renderRect.width - this.paddingLeft - this.paddingRight,
-                height: this.renderRect.height - this.paddingTop - this.paddingBottom
-            };
+        NinePatch.prototype.getBounds = function () {
+            return new PIXI.Rectangle(0, 0, this.content.width + this.paddingLeft + this.paddingRight, this.content.height + this.paddingTop + this.paddingBottom);
         };
         Object.defineProperty(NinePatch.prototype, "contentChildren", {
             get: function () {

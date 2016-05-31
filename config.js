@@ -11,6 +11,7 @@ System.config({
     "eventemitter3": "npm:eventemitter3@1.2.0",
     "linq": "npm:linq@3.0.5",
     "pixi.js": "npm:pixi.js@3.0.11",
+    "tween.js": "npm:tween.js@16.3.4",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },

@@ -8,9 +8,6 @@ export  default class CityDisplay extends LayerObjectDisplay{
         super(city, tileMap);
 
         this.interactive = true;
-        this.on("click", (e)=>{
-            e.data.selection = this.city
-        })
     }
 
 }

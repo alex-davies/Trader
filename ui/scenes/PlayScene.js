@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer", "../controls/FillContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1, FillContainer_1) {
+define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1) {
     "use strict";
     var PlayScene = (function (_super) {
         __extends(PlayScene, _super);
@@ -16,9 +16,22 @@ define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Ca
             this.mapDisplay = new MapDisplay_1.default(resources);
             this.camera = new Camera_1.default(resources, this.mapDisplay);
             this.menuContainer = new MenuContainer_1.default(resources);
-            var f1 = new FillContainer_1.default();
-            f1.addChild(new PIXI.Text("hi"));
-            //this.addChild(f1, {pixels:300});
+            // let f1 = new UIContainer({horizontalAlign:"right"});
+            // f1.width = 600;
+            // f1.height = 900;
+            // f1.addChild(new PIXI.Text("hi"));
+            // this.addChild(f1, {pixels:300});
+            // let c = this.addChild(new Container());
+            // let t = c.addChild(new PIXI.Text("hi"));
+            //
+            // let bounds = c.getBounds();
+            // let localBounds = c.getLocalBounds();
+            //
+            // t.x = 100;
+            // t.y = 100;
+            // let bounds2 = c.getBounds();
+            // let localBounds2 = c.getLocalBounds();
+            // debugger;
             this.addChild(this.menuContainer, { pixels: 300, z: 1 });
             this.addChild(this.camera, { weight: 1 });
             this.mapDisplay.on("click", function (e) {

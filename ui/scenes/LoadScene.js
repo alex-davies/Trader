@@ -30,13 +30,18 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
                     .add('gameState', '/assets/maps/demo.json')
                     .add('menuBackground', '/assets/images/backgrounds/parchment.png')
                     .add('menuBorder', '/assets/images/backgrounds/shadow.png')
-                    .add('button', '/assets/images/backgrounds/square-button.9.png')
+                    .add('buttonDown', '/assets/images/backgrounds/square-button.9.png')
+                    .add('buttonUp', '/assets/images/backgrounds/square-button-down.9.png')
                     .load(function (loader, loadedResources) {
                     var resources = new Resources_1.default();
                     resources.world = new World_1.default(loadedResources.gameState.data);
                     resources.menuBackground = loadedResources.menuBackground.texture;
                     resources.menuBorder = loadedResources.menuBorder.texture;
-                    resources.buttonNinePatch = loadedResources.button.texture;
+                    resources.button = {
+                        up: loadedResources.buttonUp.texture,
+                        down: loadedResources.buttonDown.texture,
+                        hover: loadedResources.buttonUp.texture
+                    };
                     //we now know the tilests, so we will load each of hte tilesets
                     var baseDirectory = '/assets/maps/';
                     resources.world.state.tilesets.forEach(function (tileset) {
@@ -47,6 +52,7 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
                             resources.tileSets[tileset.name] = loadedResources[tileset.name].texture;
                         });
                         resources.tileTextures = _this.generateTileMap(resources);
+                        resources.cityIcon = resources.tileTextures[21];
                         var endTime = new Date().getTime();
                         var elapsedTime = endTime - startTime;
                         console.debug('Loaded resources in ' + elapsedTime + 'ms', loadedResources);

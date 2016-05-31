@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./RenderRectContainer"], function (require, exports, RenderRectContainer_1) {
+define(["require", "exports", "./UIContainer"], function (require, exports, UIContainer_1) {
     "use strict";
     var PaddedContainer = (function (_super) {
         __extends(PaddedContainer, _super);
@@ -17,7 +17,6 @@ define(["require", "exports", "./RenderRectContainer"], function (require, expor
             this._paddingRight = paddingRight;
             this._paddingBottom = paddingBottom;
             this.pivot.x = -paddingLeft;
-            this.resetChildRenderRectTransform();
         }
         Object.defineProperty(PaddedContainer.prototype, "paddingTop", {
             get: function () {
@@ -25,7 +24,7 @@ define(["require", "exports", "./RenderRectContainer"], function (require, expor
             },
             set: function (value) {
                 this.pivot.y = -value;
-                this.resetChildRenderRectTransform();
+                this.relayout();
             },
             enumerable: true,
             configurable: true
@@ -36,7 +35,7 @@ define(["require", "exports", "./RenderRectContainer"], function (require, expor
             },
             set: function (value) {
                 this.pivot.x = -value;
-                this.resetChildRenderRectTransform();
+                this.relayout();
             },
             enumerable: true,
             configurable: true
@@ -47,7 +46,7 @@ define(["require", "exports", "./RenderRectContainer"], function (require, expor
             },
             set: function (value) {
                 this._paddingRight = value;
-                this.resetChildRenderRectTransform();
+                this.relayout();
             },
             enumerable: true,
             configurable: true
@@ -58,24 +57,23 @@ define(["require", "exports", "./RenderRectContainer"], function (require, expor
             },
             set: function (value) {
                 this._paddingBottom = value;
-                this.resetChildRenderRectTransform();
+                this.relayout();
             },
             enumerable: true,
             configurable: true
         });
-        PaddedContainer.prototype.resetChildRenderRectTransform = function () {
+        PaddedContainer.prototype.relayout = function () {
             var _this = this;
-            this.childRenderRectTransform = function (rect) {
-                return {
-                    x: rect.x,
-                    y: rect.y,
-                    width: rect.width - _this.paddingLeft - _this.paddingRight,
-                    height: rect.height - _this.paddingTop - _this.paddingBottom
-                };
-            };
+            this.children.forEach(function (child) {
+                var anyChild = child;
+                if (anyChild.width != null)
+                    anyChild.width = _this.width - _this.paddingLeft - _this.paddingRight;
+                if (anyChild.height != null)
+                    anyChild.height = _this.height - _this.paddingTop - _this.paddingBottom;
+            });
         };
         return PaddedContainer;
-    }(RenderRectContainer_1.default));
+    }(UIContainer_1.default));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = PaddedContainer;
 });

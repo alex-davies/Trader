@@ -32,7 +32,21 @@ define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTy
                 _this.addChild(cityDisplay);
             });
             this.interactive = true;
+            this.on("click", this.onClick, this);
         }
+        MapDisplay.prototype.onClick = function (e) {
+            var world = this.resources.world;
+            var localPoint = this.toLocal(e.data.global);
+            var tileIndex = this.resources.world.getTileIndex(localPoint);
+            var partOfCityIndexes = world.getExtendedNeighbours(tileIndex, function (index) { return world.isIndexPartOfCity(index); });
+            if (!partOfCityIndexes.any()) {
+                return;
+            }
+            var city = world.objectsOfType(City_1.CityUtil.TypeName).firstOrDefault(function (city) {
+                return world.getTileIndexesInRect(city).intersect(partOfCityIndexes).any();
+            });
+            e.data.selection = city;
+        };
         MapDisplay.prototype.setRenderRect = function (rect) {
             //we will adjust our background in such a way that the tilings aligns wiht our drawn tiles
             //we will also need to modify the width/height to ensure we still cover the full render area
@@ -45,7 +59,7 @@ define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTy
             this.background.width = rect.width + xAdjustment;
             this.background.height = rect.height + yAdjustment;
         };
-        MapDisplay.prototype.getLocalBounds = function () {
+        MapDisplay.prototype.getBounds = function () {
             var worldState = this.resources.world.state;
             return new PIXI.Rectangle(0, 0, worldState.width * worldState.tilewidth, worldState.height * worldState.tileheight);
         };

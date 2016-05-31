@@ -1,11 +1,12 @@
 import * as PIXI from 'pixi.js'
 import Util from "../../util/Util";
 import DebugDraw from "../controls/DebugDraw";
+import * as TWEEN from "tween.js";
 
 export class SceneManager{
 
     public renderer:PIXI.WebGLRenderer | PIXI.CanvasRenderer;
-    private currentScene : PIXI.DisplayObject;
+    private currentScene : PIXI.Container;
     private container: PIXI.Container;
 
     constructor(private htmlContainer:HTMLElement){
@@ -28,14 +29,16 @@ export class SceneManager{
         })
     }
 
-    public setScene(scene:PIXI.DisplayObject){
+    public setScene(scene:PIXI.Container){
         this.container.removeChild(this.currentScene);
         this.currentScene = this.container.addChildAt(scene,0);
-        Util.TrySetRenderRect(scene, {x:0,y:0,width:this.renderer.width, height:this.renderer.height});
+        scene.width = this.renderer.width;
+        scene.height = this.renderer.height;
+        //Util.TrySetRenderRect(scene, {x:0,y:0,width:this.renderer.width, height:this.renderer.height});
     }
 
     animate() {
-
+            TWEEN.update();
             this.renderer.render(this.container);
         window.requestAnimationFrame( ()=>this.animate() );
     }

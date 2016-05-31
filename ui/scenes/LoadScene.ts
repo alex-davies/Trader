@@ -36,14 +36,19 @@ export default class LoadScene extends PIXI.Container{
                 .add('gameState', '/assets/maps/demo.json')
                 .add('menuBackground', '/assets/images/backgrounds/parchment.png')
                 .add('menuBorder', '/assets/images/backgrounds/shadow.png')
-                .add('button', '/assets/images/backgrounds/square-button.9.png')
+                .add('buttonDown', '/assets/images/backgrounds/square-button.9.png')
+                .add('buttonUp', '/assets/images/backgrounds/square-button-down.9.png')
                 .load((loader, loadedResources)=> {
 
                 var resources = new Resources();
                 resources.world = new World(loadedResources.gameState.data);
                 resources.menuBackground = loadedResources.menuBackground.texture;
                 resources.menuBorder = loadedResources.menuBorder.texture;
-                resources.buttonNinePatch = loadedResources.button.texture;
+                resources.button = {
+                    up:loadedResources.buttonUp.texture,
+                    down:loadedResources.buttonDown.texture,
+                    hover:loadedResources.buttonUp.texture
+                };
 
                 //we now know the tilests, so we will load each of hte tilesets
                 var baseDirectory = '/assets/maps/';
@@ -59,7 +64,7 @@ export default class LoadScene extends PIXI.Container{
                     });
 
                     resources.tileTextures = this.generateTileMap(resources);
-
+                    resources.cityIcon = resources.tileTextures[21];
 
                     var endTime = new Date().getTime();
                     var elapsedTime = endTime-startTime;

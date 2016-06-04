@@ -5,9 +5,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "./NinePatch", "./UIContainer", "tween.js"], function (require, exports, NinePatch_1, UIContainer_1, TWEEN) {
     "use strict";
-    var UIButton = (function (_super) {
-        __extends(UIButton, _super);
-        function UIButton(textures, text, clickAction) {
+    var UINinePatchButton = (function (_super) {
+        __extends(UINinePatchButton, _super);
+        function UINinePatchButton(textures, text, clickAction) {
             _super.call(this);
             this.textures = textures;
             this.text = text;
@@ -22,14 +22,14 @@ define(["require", "exports", "./NinePatch", "./UIContainer", "tween.js"], funct
             this.on("mousedown", this.fire, this);
             this.relayout();
         }
-        UIButton.prototype.fire = function () {
+        UINinePatchButton.prototype.fire = function () {
             this.downNinePatch.alpha = 0;
             this.emit("fire");
             new TWEEN.Tween(this.downNinePatch)
                 .to({ alpha: 1 }, 300)
                 .start();
         };
-        UIButton.prototype.relayout = function () {
+        UINinePatchButton.prototype.relayout = function () {
             this.upNinePatch.width = this.width;
             this.upNinePatch.height = this.height;
             this.downNinePatch.width = this.width;
@@ -39,9 +39,9 @@ define(["require", "exports", "./NinePatch", "./UIContainer", "tween.js"], funct
             this.content.x = this.upNinePatch.content.x;
             this.content.y = this.upNinePatch.content.y;
         };
-        return UIButton;
+        return UINinePatchButton;
     }(UIContainer_1.default));
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = UIButton;
+    exports.default = UINinePatchButton;
 });
-//# sourceMappingURL=UIButton.js.map
+//# sourceMappingURL=UINinePatchButton.js.map

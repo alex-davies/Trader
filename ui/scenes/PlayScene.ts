@@ -13,12 +13,16 @@ import DebugDraw from "../controls/DebugDraw";
 import FillContainer from "../controls/FillContainer";
 import UIContainer from "../controls/UIContainer";
 import Container = PIXI.Container;
+import {ShipUtil, Ship} from "../../engine/objectTypes/Ship";
+import ShipMove from "../../engine/commands/ShipMove";
+import MapOverlayDisplay from "../display/MapOverlayDisplay";
 
 
 
 export default class PlayScene extends HContainer{
 
     private mapDisplay:MapDisplay;
+    private mapOverlay:MapOverlayDisplay;
     private camera:Camera;
     private menuContainer:MenuContainer;
 
@@ -31,8 +35,17 @@ export default class PlayScene extends HContainer{
         });
 
         this.mapDisplay = new MapDisplay(resources);
-        this.camera = new Camera(resources, this.mapDisplay);
+        this.mapOverlay = new MapOverlayDisplay(resources, this.mapDisplay);
+        this.camera = new Camera(resources, this.mapOverlay);
         this.menuContainer = new MenuContainer(resources);
+
+        this.mapOverlay.showMoveButtons();
+
+        let ship = resources.world.objectOfType<Ship>(ShipUtil.TypeName);
+        resources.world.issueCommand(new ShipMove(ship,188));
+
+        //this.mapOverlay.showMovePath(ship);
+
 
         // let f1 = new UIContainer({horizontalAlign:"right"});
         // f1.width = 600;

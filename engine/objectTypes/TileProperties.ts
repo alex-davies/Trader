@@ -1,3 +1,4 @@
 export interface TileProperties{
-    isPartOfCity:boolean
+    isPartOfCity:boolean;
+    allowMovement:boolean;
 }

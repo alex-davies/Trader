@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js'
 import Resources from "../Resources";
 import World from "../../engine/World";
 import DebugDraw from "../controls/DebugDraw";
+import {NinePatchButton} from "../Resources";
+import {ImageButton} from "../Resources";
 
 export default class LoadScene extends PIXI.Container{
     private loadingSprite:PIXI.Sprite;
@@ -36,19 +38,29 @@ export default class LoadScene extends PIXI.Container{
                 .add('gameState', '/assets/maps/demo.json')
                 .add('menuBackground', '/assets/images/backgrounds/parchment.png')
                 .add('menuBorder', '/assets/images/backgrounds/shadow.png')
-                .add('buttonDown', '/assets/images/backgrounds/square-button.9.png')
-                .add('buttonUp', '/assets/images/backgrounds/square-button-down.9.png')
+                .add('squareButtonUp', '/assets/images/ui/square-buySellButton.9.png')
+                .add('squareButtonDown', '/assets/images/ui/square-buySellButton-down.9.png')
+                .add('moveButtonUp', '/assets/images/ui/move-button-up.png')
+                .add('moveButtonDown', '/assets/images/ui/move-button-down.png')
                 .load((loader, loadedResources)=> {
 
                 var resources = new Resources();
                 resources.world = new World(loadedResources.gameState.data);
                 resources.menuBackground = loadedResources.menuBackground.texture;
                 resources.menuBorder = loadedResources.menuBorder.texture;
-                resources.button = {
-                    up:loadedResources.buttonUp.texture,
-                    down:loadedResources.buttonDown.texture,
-                    hover:loadedResources.buttonUp.texture
-                };
+                resources.buySellButton = new NinePatchButton(
+                    loadedResources.squareButtonUp.texture,
+                    loadedResources.squareButtonDown.texture
+                );
+                resources.moveButton = new ImageButton(
+                    loadedResources.moveButtonUp.texture,
+                    loadedResources.moveButtonDown.texture
+                );
+
+
+                    
+                    
+                    
 
                 //we now know the tilests, so we will load each of hte tilesets
                 var baseDirectory = '/assets/maps/';

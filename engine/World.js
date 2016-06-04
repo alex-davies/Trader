@@ -1,4 +1,4 @@
-define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City", "../util/Util", "linq", "./commands/CityHarvest", "eventemitter3", "./commands/DataCleanse"], function (require, exports, Player_1, City_1, Util_1, Linq, CityHarvest_1, EventEmitter, DataCleanse_1) {
+define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq", "./commands/CityHarvest", "eventemitter3", "./commands/DataCleanse", "../util/TweenGroup", "../util/Coordinates"], function (require, exports, Player_1, Util_1, Linq, CityHarvest_1, EventEmitter, DataCleanse_1, TweenGroup_1, Coordinates_1) {
     "use strict";
     var World = (function () {
         function World(state) {
@@ -8,9 +8,21 @@ define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City",
             this.tickNumber = 0;
             this.clock = new Clock();
             this.commandEmitter = new EventEmitter();
+            this.tweens = new TweenGroup_1.default();
             this.clock.every(2000, function () {
                 _this.issueCommand(new CityHarvest_1.default());
             });
+            // this.clock.every(50, ()=>{
+            //     this.objectsOfType<Ship>(ShipUtil.TypeName).forEach(ship=>{
+            //         let targetPoint = this.getTilePoint(ship.properties.moveToTileIndex);
+            //
+            //         ship.x += Math.max(-1,Math.min(1, targetPoint.x - ship.x));
+            //         ship.y += Math.max(-1,Math.min(1, targetPoint.y - ship.y));
+            //
+            //         if(targetPoint.x === ship.x && targetPoint.y === ship.y)
+            //             ship.properties.moveToTileIndex = null;
+            //     });
+            // })
             this.issueCommand(new DataCleanse_1.default());
         }
         World.prototype.player = function () {
@@ -64,9 +76,21 @@ define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City",
             return Linq.from(partOfSegment);
         };
         World.prototype.getTileIndex = function (point) {
+            point = {
+                x: point.x + (point.width || 0) / 2,
+                y: point.y - (point.height || 0) / 2
+            };
             var row = Math.floor(point.y / this.state.tileheight);
             var col = Math.floor(point.x / this.state.tilewidth);
             return this.state.width * row + col;
+        };
+        World.prototype.getTilePoint = function (tileIndex) {
+            var row = Math.floor(tileIndex / this.state.width);
+            var col = tileIndex % this.state.width;
+            return {
+                x: col * this.state.tilewidth + this.state.tilewidth / 2,
+                y: row * this.state.tileheight + this.state.tileheight / 2
+            };
         };
         World.prototype.getTileIndexesInRect = function (rect) {
             var startTilePosition = {
@@ -101,22 +125,216 @@ define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City",
                 return layer.data[tileIndex];
             }).where(function (gid) { return gid !== 0; });
         };
+        World.prototype.findPointRoute = function (start, end, canTravelOnTileIndex) {
+            var _this = this;
+            var startTile = this.getTileIndex(start);
+            var endTile = this.getTileIndex(end);
+            var tileRoute = this.findTileRoute(startTile, endTile, canTravelOnTileIndex);
+            var tilePath = tileRoute.path;
+            var distance = tileRoute.distance;
+            //no path can be found
+            if (tilePath.length == 0) {
+                return { path: [], distance: 0 };
+            }
+            //we will do some smart adjustment we do not need to go to the first tile if it is not on the way
+            if (tilePath.length >= 2) {
+                //if its shorter to move from start to second tile than move to first then second we will do the shorter
+                var firstTilePoint = this.getTilePoint(tilePath[0]);
+                var secondTilePoint = this.getTilePoint(tilePath[1]);
+                var distStartToFirstTile = Coordinates_1.XYUtil.distance(start, firstTilePoint);
+                var distStartToSecondTile = Coordinates_1.XYUtil.distance(start, secondTilePoint);
+                var distFirstTileToSecondTile = Coordinates_1.XYUtil.distance(firstTilePoint, secondTilePoint);
+                if (distStartToSecondTile < distStartToFirstTile + distFirstTileToSecondTile) {
+                    tilePath.shift();
+                    distance -= distFirstTileToSecondTile;
+                }
+                //if its shorter to go from second last tile to end, we will do that rather than go through last tile
+                var lastTilePoint = this.getTilePoint(tilePath[tilePath.length - 1]);
+                var secondLastTilePoint = this.getTilePoint(tilePath[tilePath.length - 2]);
+                var distEndToLastTile = Coordinates_1.XYUtil.distance(end, lastTilePoint);
+                var distEndToSecondLastTile = Coordinates_1.XYUtil.distance(end, secondLastTilePoint);
+                var distLastTileToSecondLastTile = Coordinates_1.XYUtil.distance(lastTilePoint, secondLastTilePoint);
+                if (distEndToSecondLastTile < distEndToLastTile + distLastTileToSecondLastTile) {
+                    tilePath.pop();
+                    distance -= distLastTileToSecondLastTile;
+                }
+            }
+            var pointPath = tilePath.map(function (ti) { return _this.getTilePoint(ti); });
+            //make sure our start and end points are part of the path
+            if (!Coordinates_1.XYUtil.equals(pointPath[0], start)) {
+                pointPath.unshift(start);
+                distance += Coordinates_1.XYUtil.distance(pointPath[0], start);
+            }
+            if (!Coordinates_1.XYUtil.equals(pointPath[pointPath.length - 1], end)) {
+                pointPath.push(end);
+                distance += Coordinates_1.XYUtil.distance(pointPath[pointPath.length - 1], end);
+            }
+            return {
+                path: pointPath,
+                distance: distance
+            };
+        };
+        World.prototype.findTileRoute = function (startTileIndex, endTileIndex, canTravelOnTileIndex) {
+            var _this = this;
+            var distance = function (tileIndex1, tileIndex2) {
+                var p1 = _this.getTilePoint(tileIndex1);
+                var p2 = _this.getTilePoint(tileIndex2);
+                return Coordinates_1.XYUtil.distance(p1, p2);
+            };
+            var open = [startTileIndex];
+            var closed = [];
+            //g_score is actual distance from start to that tile
+            var g_score = {};
+            g_score[startTileIndex] = 0;
+            //f_score is the estimated liklihood this is on the correct path. its made from
+            //the distance from start to that tile plus estimation of that tile to the end
+            var f_score = {};
+            f_score[startTileIndex] = g_score[startTileIndex] + distance(startTileIndex, endTileIndex);
+            var came_from = {};
+            var _loop_1 = function() {
+                //find the node that has the lowest f-score, i.e. will
+                //be the most likely to lead to the shortest part
+                var lowest_index = 0;
+                var lowest_node = open[lowest_index];
+                var lowest_f_score = f_score[lowest_node];
+                for (var i = 1; i < open.length; i++) {
+                    var current_node_1 = open[i];
+                    var current_f_score = f_score[current_node_1];
+                    if (lowest_f_score > current_f_score) {
+                        lowest_index = i;
+                        lowest_f_score = current_f_score;
+                        lowest_node = current_node_1;
+                    }
+                }
+                var current_node = lowest_node;
+                //close our node
+                open.splice(lowest_index, 1);
+                closed.push(lowest_node);
+                //if we cant travel on this node, forget about it
+                if (!canTravelOnTileIndex(lowest_node))
+                    return "continue";
+                //if we have reached the end node, we are done, we just need
+                //to rebuild the path
+                if (current_node === endTileIndex) {
+                    path = [lowest_node];
+                    source = came_from[lowest_node];
+                    while (source) {
+                        path.push(source);
+                        source = came_from[source];
+                    }
+                    path.reverse();
+                    return { value: {
+                        path: path,
+                        distance: g_score[current_node]
+                    } };
+                }
+                this_1.getNeighbourIndexes(current_node).forEach(function (neighbour) {
+                    //don't touch nodes we have processed before
+                    if (closed.indexOf(neighbour) != -1)
+                        return;
+                    var tentative_g_score = g_score[current_node] + distance(current_node, neighbour);
+                    if (open.indexOf(neighbour) === -1) {
+                        open.push(neighbour);
+                    }
+                    else if (tentative_g_score >= g_score[neighbour]) {
+                        return; //this is not a better path
+                    }
+                    came_from[neighbour] = current_node;
+                    g_score[neighbour] = tentative_g_score;
+                    f_score[neighbour] = tentative_g_score + distance(current_node, neighbour);
+                });
+            };
+            var this_1 = this;
+            var path, source;
+            while (open.length > 0) {
+                var state_1 = _loop_1();
+                if (typeof state_1 === "object") return state_1.value;
+                if (state_1 === "continue") continue;
+            }
+        };
+        // findPath(sourceMarkerIds:string[], targetMarkerId:string):string[]{
+        //
+        //     var open = sourceMarkerIds;
+        //
+        //     var came_from = {};
+        //
+        //     var g_score = {};
+        //     for(var i=0;i<sourceMarkerIds.length;i++){
+        //         g_score[sourceMarkerIds[i]] = 0;
+        //     }
+        //
+        //     var f_score = {};
+        //     for(var i=0;i<sourceMarkerIds.length;i++) {
+        //         f_score[sourceMarkerIds[i]]= g_score[sourceMarkerIds[i]] + this.distance(sourceMarkerIds[i], targetMarkerId);
+        //     }
+        //
+        //
+        //     var closedSet = [];
+        //
+        //     while(open.length > 0){
+        //
+        //         var lowest_index = 0;
+        //         var lowest_node = open[lowest_index];
+        //         var lowest_f_score = f_score[lowest_node];
+        //
+        //         for(var i=1;i<open.length;i++) {
+        //             var current_node = open[i];
+        //             var current_f_score = f_score[current_node];
+        //             if(lowest_f_score > current_f_score){
+        //                 lowest_index = i;
+        //                 lowest_f_score = current_f_score;
+        //                 lowest_node = current_node;
+        //             }
+        //         }
+        //
+        //         if(lowest_node == targetMarkerId){
+        //             var path = [lowest_node];
+        //             var source = came_from[lowest_node];
+        //             while(source){
+        //                 path.push(source);
+        //                 source = came_from[source];
+        //             }
+        //             path.reverse();
+        //             return path;
+        //         }
+        //
+        //         open.splice(lowest_index, 1);
+        //         closedSet.push(lowest_node);
+        //
+        //         var neighbours = this.neighbours(lowest_node)
+        //         for(var i=0;i<neighbours.length;i++){
+        //             var neighbour = neighbours[i];
+        //
+        //             //dont touch nodes we have processed before
+        //             if(closedSet.indexOf(neighbour) != -1)
+        //                 continue;
+        //
+        //             var tentative_g_score = g_score[current_node] + this.distance(lowest_node, neighbour);
+        //
+        //             if(open.indexOf(neighbour) === -1){
+        //                 open.push(neighbour)
+        //             }
+        //             else if(tentative_g_score >= g_score[neighbour]){
+        //                 continue; //this is not a better path
+        //             }
+        //
+        //             came_from[neighbour] = lowest_node;
+        //             g_score[neighbour] = tentative_g_score;
+        //             f_score[neighbour] = tentative_g_score + this.distance(lowest_node, neighbour);
+        //         }
+        //     }
+        // }
         World.prototype.isIndexPartOfCity = function (tileIndex) {
             var _this = this;
             return this.getGidStack(tileIndex)
                 .select(function (gid) { return _this.getTilePropertiesFromGid(gid); })
                 .any(function (prop) { return prop.isPartOfCity; });
         };
-        World.prototype.cityOrNull = function (point) {
+        World.prototype.isMovementAllowed = function (tileIndex) {
             var _this = this;
-            var tileIndex = this.getTileIndex(point);
-            if (!this.isIndexPartOfCity(tileIndex)) {
-                return null;
-            }
-            var partOfCityIndexes = this.getExtendedNeighbours(tileIndex, function (index) { return _this.isIndexPartOfCity(index); });
-            var city = this.objectsOfType(City_1.CityUtil.TypeName).firstOrDefault(function (city) {
-                return _this.getTileIndexesInRect(city).intersect(partOfCityIndexes).any();
-            });
+            return this.getGidStack(tileIndex)
+                .select(function (gid) { return _this.getTilePropertiesFromGid(gid); })
+                .all(function (prop) { return prop.allowMovement; });
         };
         World.prototype.onCommand = function (clazz, callback) {
             var typeName = Util_1.default.FunctionName(clazz);
@@ -156,6 +374,7 @@ define(["require", "exports", "engine/objectTypes/Player", "./objectTypes/City",
         };
         World.prototype.tick = function (elapsedMilliseconds) {
             this.clock.tick(elapsedMilliseconds);
+            this.tweens.update(this.clock.time);
         };
         return World;
     }());

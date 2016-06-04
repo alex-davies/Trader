@@ -16,7 +16,7 @@ import FillContainer from "../controls/FillContainer";
 import UIText from "../controls/UIText";
 import UISprite from "../controls/UISprite";
 import AlignContainer from "../controls/AlignContainer";
-import UIButton from "../controls/UIButton";
+import UIButton from "../controls/UINinePatchButton";
 import UIContainer from "../controls/UIContainer";
 import ShipBuyResource from "../../engine/commands/ShipBuyResource";
 
@@ -50,11 +50,11 @@ export default class CityMenu extends VContainer{
         let cityAmountText:UIText;
         let shipAmountText:UIText;
         
-        let buyButton:UIButton = new UIButton(this.resources.button, new UIText("Buy"),()=>{
+        let buyButton:UIButton = new UIButton(this.resources.buySellButton, new UIText("Buy"),()=>{
             this.resources.world.issueCommand(new ShipBuyResource(ship,this.city,resourceMeta))
         });
         
-        let sellButton:UIButton  = new UIButton(this.resources.button, new UIText("Sell"),()=>{
+        let sellButton:UIButton  = new UIButton(this.resources.buySellButton, new UIText("Sell"),()=>{
             this.resources.world.issueCommand(new ShipBuyResource(ship,this.city,resourceMeta))
         });;
 
@@ -117,7 +117,7 @@ export default class CityMenu extends VContainer{
 
 
     buildSellButton(){
-        let button = new UIButton(this.resources.button, new UIText("Sell"),()=>{
+        let button = new UIButton(this.resources.buySellButton, new UIText("Sell"),()=>{
             console.log("sell");
         });
         return button;

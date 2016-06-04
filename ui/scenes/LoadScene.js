@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], function (require, exports, PIXI, Resources_1, World_1) {
+define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World", "../Resources", "../Resources"], function (require, exports, PIXI, Resources_1, World_1, Resources_2, Resources_3) {
     "use strict";
     var LoadScene = (function (_super) {
         __extends(LoadScene, _super);
@@ -30,18 +30,17 @@ define(["require", "exports", 'pixi.js', "../Resources", "../../engine/World"], 
                     .add('gameState', '/assets/maps/demo.json')
                     .add('menuBackground', '/assets/images/backgrounds/parchment.png')
                     .add('menuBorder', '/assets/images/backgrounds/shadow.png')
-                    .add('buttonDown', '/assets/images/backgrounds/square-button.9.png')
-                    .add('buttonUp', '/assets/images/backgrounds/square-button-down.9.png')
+                    .add('squareButtonUp', '/assets/images/ui/square-buySellButton.9.png')
+                    .add('squareButtonDown', '/assets/images/ui/square-buySellButton-down.9.png')
+                    .add('moveButtonUp', '/assets/images/ui/move-button-up.png')
+                    .add('moveButtonDown', '/assets/images/ui/move-button-down.png')
                     .load(function (loader, loadedResources) {
                     var resources = new Resources_1.default();
                     resources.world = new World_1.default(loadedResources.gameState.data);
                     resources.menuBackground = loadedResources.menuBackground.texture;
                     resources.menuBorder = loadedResources.menuBorder.texture;
-                    resources.button = {
-                        up: loadedResources.buttonUp.texture,
-                        down: loadedResources.buttonDown.texture,
-                        hover: loadedResources.buttonUp.texture
-                    };
+                    resources.buySellButton = new Resources_2.NinePatchButton(loadedResources.squareButtonUp.texture, loadedResources.squareButtonDown.texture);
+                    resources.moveButton = new Resources_3.ImageButton(loadedResources.moveButtonUp.texture, loadedResources.moveButtonDown.texture);
                     //we now know the tilests, so we will load each of hte tilesets
                     var baseDirectory = '/assets/maps/';
                     resources.world.state.tilesets.forEach(function (tileset) {

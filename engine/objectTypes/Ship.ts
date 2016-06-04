@@ -12,8 +12,14 @@ export class ShipUtil{
         return Linq.from(ship.properties).where(kvp=>Properties.IsInventory(kvp.key)).sum(kvp=>kvp.value);
     }
 }
+
 export interface Ship extends Tiled.LayerObject{
     properties:{
         resourceLimit:number;
+        moveToTileIndex:number;
+        moveFromTileIndex:number;
+
+        _moveToPoints:{x:number,y:number}[];
+        _moveFromPoints:{x:number,y:number}[];
     };
 }

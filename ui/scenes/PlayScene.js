@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1) {
+define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer", "../../engine/objectTypes/Ship", "../../engine/commands/ShipMove", "../display/MapOverlayDisplay"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1, Ship_1, ShipMove_1, MapOverlayDisplay_1) {
     "use strict";
     var PlayScene = (function (_super) {
         __extends(PlayScene, _super);
@@ -14,8 +14,13 @@ define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Ca
                 resources.world.tick(PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
             });
             this.mapDisplay = new MapDisplay_1.default(resources);
-            this.camera = new Camera_1.default(resources, this.mapDisplay);
+            this.mapOverlay = new MapOverlayDisplay_1.default(resources, this.mapDisplay);
+            this.camera = new Camera_1.default(resources, this.mapOverlay);
             this.menuContainer = new MenuContainer_1.default(resources);
+            this.mapOverlay.showMoveButtons();
+            var ship = resources.world.objectOfType(Ship_1.ShipUtil.TypeName);
+            resources.world.issueCommand(new ShipMove_1.default(ship, 188));
+            //this.mapOverlay.showMovePath(ship);
             // let f1 = new UIContainer({horizontalAlign:"right"});
             // f1.width = 600;
             // f1.height = 900;

@@ -111,7 +111,7 @@
          "name":"cities",
          "objects":[
                 {
-                 "height":64,
+                 "height":32,
                  "id":21,
                  "name":"Laketown",
                  "properties":
@@ -127,7 +127,7 @@
                  "visible":true,
                  "width":32,
                  "x":256,
-                 "y":256
+                 "y":288
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -142,24 +142,15 @@
          "name":"ships",
          "objects":[
                 {
-                 "gid":37,
-                 "height":32,
-                 "id":20,
+                 "height":0,
+                 "id":38,
                  "name":"",
-                 "properties":
-                    {
-                     "resourceLimit":4
-                    },
-                 "propertytypes":
-                    {
-                     "resourceLimit":"int"
-                    },
                  "rotation":0,
                  "type":"Ship",
                  "visible":true,
-                 "width":32,
-                 "x":256,
-                 "y":320
+                 "width":0,
+                 "x":48,
+                 "y":112
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -168,7 +159,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":31,
+ "nextobjectid":39,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,
@@ -199,6 +190,14 @@
          "tileheight":32,
          "tileproperties":
             {
+             "0":
+                {
+                 "allowMovement":true
+                },
+             "1":
+                {
+                 "allowMovement":true
+                },
              "18":
                 {
                  "isPartOfCity":true,
@@ -211,15 +210,39 @@
                  "production.food":1,
                  "production.labor":-2
                 },
+             "2":
+                {
+                 "allowMovement":true
+                },
              "20":
                 {
                  "isPartOfCity":true,
                  "production.food":-1,
                  "production.labor":1
+                },
+             "21":
+                {
+                 "allowMovement":true
+                },
+             "22":
+                {
+                 "allowMovement":true
+                },
+             "23":
+                {
+                 "allowMovement":true
                 }
             },
          "tilepropertytypes":
             {
+             "0":
+                {
+                 "allowMovement":"bool"
+                },
+             "1":
+                {
+                 "allowMovement":"bool"
+                },
              "18":
                 {
                  "isPartOfCity":"bool",
@@ -232,11 +255,27 @@
                  "production.food":"int",
                  "production.labor":"int"
                 },
+             "2":
+                {
+                 "allowMovement":"bool"
+                },
              "20":
                 {
                  "isPartOfCity":"bool",
                  "production.food":"int",
                  "production.labor":"int"
+                },
+             "21":
+                {
+                 "allowMovement":"bool"
+                },
+             "22":
+                {
+                 "allowMovement":"bool"
+                },
+             "23":
+                {
+                 "allowMovement":"bool"
                 }
             },
          "tiles":

@@ -6,19 +6,20 @@ import AlignContainer from "./AlignContainer";
 import NinePatch from "./NinePatch";
 import UIText from "./UIText";
 import Resources from "../Resources";
-import {ButtonNinePatch} from "../Resources";
+
 import UIContainer from "./UIContainer";
 import * as TWEEN from "tween.js";
+import {NinePatchButton} from "../Resources";
 
 
-export default class UIButton extends UIContainer{
+export default class UINinePatchButton extends UIContainer{
 
     upNinePatch:NinePatch;
     downNinePatch:NinePatch;
     content:PIXI.Container;
 
     
-    constructor(public textures:ButtonNinePatch, public text:UIText, clickAction?:()=>void) {
+    constructor(public textures:NinePatchButton, public text:UIText, clickAction?:()=>void) {
         super();
         this.buttonMode = true;
         this.interactive = true;

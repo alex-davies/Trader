@@ -3,8 +3,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay", "../../engine/objectTypes/Ship", "./ShipDisplay"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1, Ship_1, ShipDisplay_1) {
+define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay", "../../engine/objectTypes/Ship", "./ShipDisplay", "linq", "./overlay/ShipPathOverlay"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1, Ship_1, ShipDisplay_1, Linq, ShipPathOverlay_1) {
     "use strict";
+    var Container = PIXI.Container;
     var MapDisplay = (function (_super) {
         __extends(MapDisplay, _super);
         function MapDisplay(resources) {
@@ -17,35 +18,91 @@ define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTy
                 throw Error("render order '${renderOrder}' is not supported. right-down is hte only supported render order");
             }
             var map = resources.world.state;
-            //load up all our tile layers
+            //1. background
             this.background = this.addChild(new PIXI.extras.TilingSprite(resources.tileTextures[1], this.width, this.height));
+            //2. tiles
+            this.tileContainer = this.addChild(new Container());
             resources.world.tileLayers().forEach(function (layer) {
                 var layerDisplay = new TileLayerDisplay_1.default(map, layer, resources.tileTextures);
-                _this.addChild(layerDisplay);
+                _this.tileContainer.addChild(layerDisplay);
             });
+            //3. under object overlay
+            this.underObjectsOverlay = this.addChild(new PIXI.Container());
+            //4. objects
             resources.world.objectsOfType(City_1.CityUtil.TypeName).forEach(function (city) {
                 var cityDisplay = new CityDisplay_1.default(city, resources.tileTextures);
                 _this.addChild(cityDisplay);
             });
+            this.shipContainer = this.addChild(new PIXI.Container());
             resources.world.objectsOfType(Ship_1.ShipUtil.TypeName).forEach(function (ship) {
                 var cityDisplay = new ShipDisplay_1.default(ship, resources.tileTextures);
-                _this.addChild(cityDisplay);
+                _this.shipContainer.addChild(cityDisplay);
             });
+            //4. over object overlay
+            this.overObjectsOverlay = this.addChild(new PIXI.Container());
+            //5. grid
+            // let grid = this.addChild(new PIXI.Graphics());
+            // grid.lineStyle(1,0xFFFFFF, 0.5);
+            // for(let row = 0 ; row <= resources.world.state.height; row++){
+            //     grid.moveTo(row*resources.world.state.tileheight,0);
+            //     grid.lineTo(row*resources.world.state.tileheight, resources.world.state.width * resources.world.state.tilewidth);
+            //
+            // }
+            // for(let col=0;col<resources.world.state.width;col++){
+            //     grid.moveTo(0,col*resources.world.state.tilewidth);
+            //     grid.lineTo( resources.world.state.height * resources.world.state.tileheight,col*resources.world.state.tilewidth);
+            // }
             this.interactive = true;
             this.on("click", this.onClick, this);
+            this.on("selection", this.onSelection, this);
         }
+        MapDisplay.prototype.onSelection = function (selectedItems) {
+            var items = Linq.from(selectedItems);
+            var ship = items.cast().firstOrDefault(function (x) { return x.type === Ship_1.ShipUtil.TypeName; });
+            //this.underObjectsOverlay.children
+            this.underObjectsOverlay.children
+                .filter(function (x) { return x instanceof ShipPathOverlay_1.default; })
+                .forEach(function (overlay) { return overlay.emit("requestRemove"); });
+            if (ship) {
+                var pathOverlay = this.underObjectsOverlay.addChild(new ShipPathOverlay_1.default(ship));
+            }
+        };
         MapDisplay.prototype.onClick = function (e) {
+            var selectedItems = [];
+            var city = this.findSelectedCity(e);
+            if (city)
+                selectedItems.push(city);
+            var ship = this.findSelectedShip(e);
+            if (ship)
+                selectedItems.push(ship);
+            this.emit("selection", selectedItems);
+        };
+        MapDisplay.prototype.findSelectedCity = function (e) {
             var world = this.resources.world;
             var localPoint = this.toLocal(e.data.global);
             var tileIndex = this.resources.world.getTileIndex(localPoint);
             var partOfCityIndexes = world.getExtendedNeighbours(tileIndex, function (index) { return world.isIndexPartOfCity(index); });
             if (!partOfCityIndexes.any()) {
-                return;
+                return null;
             }
             var city = world.objectsOfType(City_1.CityUtil.TypeName).firstOrDefault(function (city) {
                 return world.getTileIndexesInRect(city).intersect(partOfCityIndexes).any();
             });
-            e.data.selection = city;
+            return city;
+        };
+        MapDisplay.prototype.findSelectedShip = function (e) {
+            var world = this.resources.world;
+            var localPoint = this.shipContainer.toLocal(e.data.global);
+            var selectedShipDisplay = Linq.from(this.shipContainer.children)
+                .where(function (x) {
+                var localPoint = e.data.getLocalPosition(x);
+                return x.getLocalBounds().contains(localPoint.x, localPoint.y);
+            })
+                .cast()
+                .firstOrDefault();
+            if (selectedShipDisplay)
+                return selectedShipDisplay.ship;
+            return null;
         };
         MapDisplay.prototype.setRenderRect = function (rect) {
             //we will adjust our background in such a way that the tilings aligns wiht our drawn tiles

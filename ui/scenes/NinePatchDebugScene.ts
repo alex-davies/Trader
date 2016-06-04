@@ -90,10 +90,10 @@ export default class DebugScene extends PIXI.Container {
     addAndroidPatch(){
         let yValue = (this.numberAdded++) * this.spacePerPatch;
         PIXI.loader
-            .add('button', '/assets/images/backgrounds/button.9.png')
+            .add('buySellButton', '/assets/images/backgrounds/buySellButton.9.png')
             .load((loader, res)=> {
 
-                var androidPatch = new NinePatch().loadFromAndroidImage(res.button.texture);
+                var androidPatch = new NinePatch().loadFromAndroidImage(res.buySellButton.texture);
                 androidPatch.addChild(new PIXI.Text("android patch"));
                 androidPatch.y = yValue;
                 this.addChild(androidPatch);
@@ -103,21 +103,21 @@ export default class DebugScene extends PIXI.Container {
     addAndroidPatchWithHover(){
         let yValue = (this.numberAdded++) * this.spacePerPatch;
         PIXI.loader
-            .add('button', '/assets/images/backgrounds/button.9.png')
-            .add('buttonGreen', '/assets/images/backgrounds/button-green.9.png')
+            .add('buySellButton', '/assets/images/backgrounds/buySellButton.9.png')
+            .add('buttonGreen', '/assets/images/backgrounds/buySellButton-green.9.png')
             .load((loader, res)=> {
 
-                var androidPatch = new NinePatch().loadFromAndroidImage(res.button.texture);
+                var androidPatch = new NinePatch().loadFromAndroidImage(res.buySellButton.texture);
                 androidPatch.interactive = true;
                 this.buttonMode = true;
                 androidPatch.on("mousedown",function(){
                     this.loadFromAndroidImage(res.buttonGreen.texture);
                 });
                 androidPatch.on("mouseup", function(){
-                    this.loadFromAndroidImage(res.button.texture);
+                    this.loadFromAndroidImage(res.buySellButton.texture);
                 })
                 androidPatch.on("mouseupoutside",function(){
-                    this.loadFromAndroidImage(res.button.texture);
+                    this.loadFromAndroidImage(res.buySellButton.texture);
                 });
                 androidPatch.on("mouseclick", function(){
                     alert('hi');

@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "../../engine/objectTypes/Properties", "linq", "../controls/StackContainer", "../../engine/commands/CityHarvest", "../../engine/objectTypes/Resource", "../controls/StackContainer", "../controls/StackContainer", "../../engine/objectTypes/Ship", "../controls/UIText", "../controls/UISprite", "../controls/UIButton", "../../engine/commands/ShipBuyResource"], function (require, exports, Properties_1, Linq, StackContainer_1, CityHarvest_1, Resource_1, StackContainer_2, StackContainer_3, Ship_1, UIText_1, UISprite_1, UIButton_1, ShipBuyResource_1) {
+define(["require", "exports", "../../engine/objectTypes/Properties", "linq", "../controls/StackContainer", "../../engine/commands/CityHarvest", "../../engine/objectTypes/Resource", "../controls/StackContainer", "../controls/StackContainer", "../../engine/objectTypes/Ship", "../controls/UIText", "../controls/UISprite", "../controls/UINinePatchButton", "../../engine/commands/ShipBuyResource"], function (require, exports, Properties_1, Linq, StackContainer_1, CityHarvest_1, Resource_1, StackContainer_2, StackContainer_3, Ship_1, UIText_1, UISprite_1, UINinePatchButton_1, ShipBuyResource_1) {
     "use strict";
     var CityMenu = (function (_super) {
         __extends(CityMenu, _super);
@@ -27,10 +27,10 @@ define(["require", "exports", "../../engine/objectTypes/Properties", "linq", "..
             var _this = this;
             var cityAmountText;
             var shipAmountText;
-            var buyButton = new UIButton_1.default(this.resources.button, new UIText_1.default("Buy"), function () {
+            var buyButton = new UINinePatchButton_1.default(this.resources.buySellButton, new UIText_1.default("Buy"), function () {
                 _this.resources.world.issueCommand(new ShipBuyResource_1.default(ship, _this.city, resourceMeta));
             });
-            var sellButton = new UIButton_1.default(this.resources.button, new UIText_1.default("Sell"), function () {
+            var sellButton = new UINinePatchButton_1.default(this.resources.buySellButton, new UIText_1.default("Sell"), function () {
                 _this.resources.world.issueCommand(new ShipBuyResource_1.default(ship, _this.city, resourceMeta));
             });
             ;
@@ -76,7 +76,7 @@ define(["require", "exports", "../../engine/objectTypes/Properties", "linq", "..
             });
         };
         CityMenu.prototype.buildSellButton = function () {
-            var button = new UIButton_1.default(this.resources.button, new UIText_1.default("Sell"), function () {
+            var button = new UINinePatchButton_1.default(this.resources.buySellButton, new UIText_1.default("Sell"), function () {
                 console.log("sell");
             });
             return button;

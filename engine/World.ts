@@ -23,7 +23,7 @@ export default class World {
     
     constructor(public state:Tiled.Map){
         this.clock.every(2000, ()=>{
-           this.issueCommand(new CityHarvest());
+           //this.issueCommand(new CityHarvest());
         });
 
         // this.clock.every(50, ()=>{
@@ -49,7 +49,14 @@ export default class World {
             return existingPlayer
         }
     }
-    
+
+    public objectWithId<T extends Tiled.LayerObject>(id:number):T{
+        return Linq.from(this.state.layers)
+            .where(layer=>layer.type === "objectgroup")
+            .selectMany(layer=><T[]>layer.objects)
+            .firstOrDefault(obj=>obj.id === id)
+    }
+
     public objectsOfType<T extends Tiled.LayerObject>(type:string) : Linq.IEnumerable<T>{
         return Linq.from(this.state.layers)
             .where(layer=>layer.type === "objectgroup")
@@ -221,11 +228,11 @@ export default class World {
 
         //make sure our start and end points are part of the path
         if(!XYUtil.equals(pointPath[0], start)){
-            pointPath.unshift(start);
+            pointPath.unshift({x:start.x,y:start.y});
             distance += XYUtil.distance(pointPath[0], start);
         }
         if(!XYUtil.equals(pointPath[pointPath.length-1], end)){
-            pointPath.push(end);
+            pointPath.push({x:end.x,y:end.y});
             distance += XYUtil.distance(pointPath[pointPath.length-1], end);
         }
 
@@ -320,6 +327,10 @@ export default class World {
             });
         }
 
+        return {
+            path:[],
+            distance:0
+        };
     }
 
     // findPath(sourceMarkerIds:string[], targetMarkerId:string):string[]{
@@ -413,25 +424,25 @@ export default class World {
 
 
 
-    public onCommand<T>(clazz: {new (...args : any[]): T, prototype: Command; }, callback:(command:T)=>void){
+    public onCommand<T>(clazz: {new (...args : any[]): T, prototype: Command; }, callback:(command:T)=>void, context?:any){
 
         var typeName = Util.FunctionName(<any>clazz);
-        this.commandEmitter.on(typeName, callback);
+        this.commandEmitter.on(typeName, callback, context);
     }
 
-    public offCommand<T>(clazz: {new (...args : any[]): T, prototype: Command; }, callback:(command:T)=>void){
+    public offCommand<T>(clazz: {new (...args : any[]): T, prototype: Command; }, callback:(command:T)=>void, context?:any){
 
         var typeName = Util.FunctionName(<any>clazz);
-        this.commandEmitter.off(typeName, callback);
+        this.commandEmitter.off(typeName, callback, context);
 
     }
 
-    public onCommands(clazzes: {new (...args : any[]): any, prototype: Command; }[], callback:(command:Command)=>void){
-        clazzes.forEach(clazz=>this.onCommand(clazz,callback));
+    public onCommands(clazzes: {new (...args : any[]): any, prototype: Command; }[], callback:(command:Command)=>void, context?:any){
+        clazzes.forEach(clazz=>this.onCommand(clazz,callback, context));
     }
 
-    public offCommands(clazzes: {new (...args : any[]): any, prototype: Command; }[], callback:(command:Command)=>void){
-        clazzes.forEach(clazz=>this.offCommand(clazz,callback));
+    public offCommands(clazzes: {new (...args : any[]): any, prototype: Command; }[], callback:(command:Command)=>void, context?:any){
+        clazzes.forEach(clazz=>this.offCommand(clazz,callback, context));
     }
 
 

@@ -10,7 +10,7 @@ import {Resource} from "../objectTypes/Resource";
 import * as Linq from "linq"
 import * as TWEEN from "tween.js";
 export default class ShipMove implements Command{
-    constructor(public ship:Ship, public destinationTileIndex:number){
+    constructor(public ship:Ship, public destinationPoint:{x:number,y:number}){
 
     }
 
@@ -20,15 +20,23 @@ export default class ShipMove implements Command{
         if(!canExecute.isSuccessful)
             return canExecute;
 
-        let destinationPoint = world.getTilePoint(this.destinationTileIndex);
-        let pointRoute = world.findPointRoute(this.ship,destinationPoint, (tileIndex)=>world.isMovementAllowed(tileIndex));
+        if(this.ship.properties._moveTween){
+            world.tweens.remove(this.ship.properties._moveTween);
+        }
+
+        let pointRoute = world.findPointRoute(this.ship, this.destinationPoint, (tileIndex)=>world.isMovementAllowed(tileIndex));
+        if(pointRoute.path.length > 0 && pointRoute.path[0].x === this.ship.x && pointRoute.path[0].y === this.ship.y)
+            pointRoute.path.shift();
 
         this.ship.properties._moveToPoints = pointRoute.path;
         this.ship.properties._moveFromPoints = this.ship.properties._moveFromPoints || [];
 
+
+
         let xPoints = pointRoute.path.map(p=>p.x);
         let yPoints = pointRoute.path.map(p=>p.y);
-        let pointsTravelled = 0
+        let pointsTravelled = 0;
+
         let tween = world.tweens.add(new TWEEN.Tween(this.ship).to({x:xPoints,y:yPoints},pointRoute.distance * 30)
             .easing(TWEEN.Easing.Linear.None)
             .interpolation(TWEEN.Interpolation.CatmullRom)
@@ -41,7 +49,13 @@ export default class ShipMove implements Command{
 
                 pointsTravelled = pointsTravelledOnUpdate;
             })
+            .onComplete(progress=>{
+                this.ship.properties._moveFromPoints = [];
+                this.ship.properties._moveFromPoints = [];
+            })
             .start(world.clock.time));
+
+        this.ship.properties._moveTween = tween;
 
         //
         // let points = tileIndexPath.map(tileIndex=>world.getTilePoint(tileIndex));

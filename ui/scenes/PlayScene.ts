@@ -1,3 +1,4 @@
+import * as Linq from "linq"
 import * as PIXI from 'pixi.js'
 import Resources from "../Resources";
 import Texture = PIXI.Texture;
@@ -16,13 +17,14 @@ import Container = PIXI.Container;
 import {ShipUtil, Ship} from "../../engine/objectTypes/Ship";
 import ShipMove from "../../engine/commands/ShipMove";
 import MapOverlayDisplay from "../display/MapOverlayDisplay";
+import ShipPathOverlay from "../display/overlay/ShipPathOverlay";
+import ShipTravelPointsOverlay from "../display/overlay/ShipTravelPointsOverlay";
 
 
 
 export default class PlayScene extends HContainer{
 
     private mapDisplay:MapDisplay;
-    private mapOverlay:MapOverlayDisplay;
     private camera:Camera;
     private menuContainer:MenuContainer;
 
@@ -31,57 +33,35 @@ export default class PlayScene extends HContainer{
         super(-resources.menuBorder.width);
 
         PIXI.ticker.shared.add(()=> {
-            resources.world.tick(PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
+            //we will prevent hte world from skipping ahead if tab not in focus
+            let elapsedTime = Math.min(200, PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
+            resources.world.tick(elapsedTime);
         });
 
         this.mapDisplay = new MapDisplay(resources);
-        this.mapOverlay = new MapOverlayDisplay(resources, this.mapDisplay);
-        this.camera = new Camera(resources, this.mapOverlay);
+        this.camera = new Camera(resources, this.mapDisplay);
         this.menuContainer = new MenuContainer(resources);
 
-        this.mapOverlay.showMoveButtons();
-
-        let ship = resources.world.objectOfType<Ship>(ShipUtil.TypeName);
-        resources.world.issueCommand(new ShipMove(ship,188));
-
-        //this.mapOverlay.showMovePath(ship);
-
-
-        // let f1 = new UIContainer({horizontalAlign:"right"});
-        // f1.width = 600;
-        // f1.height = 900;
-        // f1.addChild(new PIXI.Text("hi"));
-        // this.addChild(f1, {pixels:300});
-
-        // let c = this.addChild(new Container());
-        // let t = c.addChild(new PIXI.Text("hi"));
-        //
-        // let bounds = c.getBounds();
-        // let localBounds = c.getLocalBounds();
-        //
-        // t.x = 100;
-        // t.y = 100;
-        // let bounds2 = c.getBounds();
-        // let localBounds2 = c.getLocalBounds();
-        // debugger;
 
 
 
         this.addChild(this.menuContainer, {pixels: 300, z: 1});
         this.addChild(this.camera, {weight: 1});
 
-        this.mapDisplay.on("click", (e)=> {
-            var objSelection = e.data.selection;
+        //for now we will treat the players ship as always selected
+        let player = resources.world.player();
+        let playerShip = resources.world.objectsOfType<Ship>(ShipUtil.TypeName).firstOrDefault(s=>s.properties.playerId === player.id);
+        if(playerShip) {
+            this.mapDisplay.underObjectsOverlay.addChild(new ShipPathOverlay(resources, playerShip)).animateIn();
+            this.mapDisplay.underObjectsOverlay.addChild(new ShipTravelPointsOverlay(resources, playerShip)).animateIn();
+        }
+        this.mapDisplay.on("selection", (selectedItems)=>{
 
-            if(CityUtil.IsCity(objSelection)){
-                this.menuContainer.showCityMenu(e.data.selection)
-            }
-        });
+            selectedItems = selectedItems.push(playerShip);
+            let items = Linq.from(selectedItems);
 
-        setInterval(()=>{
-            var camera = this.camera;
-            //debugger;
-        },5000);
+        })
+
     }
 
 }

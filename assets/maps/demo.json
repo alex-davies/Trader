@@ -41,7 +41,7 @@
                 {
                  "height":0,
                  "id":29,
-                 "name":"",
+                 "name":"Player 1",
                  "rotation":0,
                  "type":"Player",
                  "visible":true,
@@ -111,7 +111,7 @@
          "name":"cities",
          "objects":[
                 {
-                 "height":32,
+                 "height":0,
                  "id":21,
                  "name":"Laketown",
                  "properties":
@@ -125,9 +125,31 @@
                  "rotation":0,
                  "type":"City",
                  "visible":true,
-                 "width":32,
-                 "x":256,
-                 "y":288
+                 "width":0,
+                 "x":272,
+                 "y":304
+                }, 
+                {
+                 "height":0,
+                 "id":39,
+                 "name":"Harbourside",
+                 "rotation":0,
+                 "type":"City",
+                 "visible":true,
+                 "width":0,
+                 "x":240,
+                 "y":464
+                }, 
+                {
+                 "height":0,
+                 "id":40,
+                 "name":"Bear Island",
+                 "rotation":0,
+                 "type":"City",
+                 "visible":true,
+                 "width":0,
+                 "x":512,
+                 "y":480
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -145,12 +167,20 @@
                  "height":0,
                  "id":38,
                  "name":"",
+                 "properties":
+                    {
+                     "playerId":29
+                    },
+                 "propertytypes":
+                    {
+                     "playerId":"int"
+                    },
                  "rotation":0,
                  "type":"Ship",
                  "visible":true,
                  "width":0,
-                 "x":48,
-                 "y":112
+                 "x":352,
+                 "y":416
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -159,7 +189,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":39,
+ "nextobjectid":41,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,

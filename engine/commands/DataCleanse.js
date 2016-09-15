@@ -1,4 +1,4 @@
-define(["require", "exports", "engine/commands/Command", "linq"], function (require, exports, Command_1, Linq) {
+define(["require", "exports", "engine/commands/Command", "linq", "../objectTypes/Ship"], function (require, exports, Command_1, Linq, Ship_1) {
     "use strict";
     var DataCleanse = (function () {
         function DataCleanse() {
@@ -9,6 +9,10 @@ define(["require", "exports", "engine/commands/Command", "linq"], function (requ
                 .selectMany(function (layer) { return layer.objects; })
                 .forEach(function (obj) {
                 obj.properties = obj.properties || {};
+            });
+            world.objectsOfType(Ship_1.ShipUtil.TypeName).forEach(function (ship) {
+                ship.properties._moveFromPoints = ship.properties._moveFromPoints || [];
+                ship.properties._moveToPoints = ship.properties._moveToPoints || [];
             });
             return Command_1.SuccessResult;
         };

@@ -1,8 +1,7 @@
-define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq", "./commands/CityHarvest", "eventemitter3", "./commands/DataCleanse", "../util/TweenGroup", "../util/Coordinates"], function (require, exports, Player_1, Util_1, Linq, CityHarvest_1, EventEmitter, DataCleanse_1, TweenGroup_1, Coordinates_1) {
+define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq", "eventemitter3", "./commands/DataCleanse", "../util/TweenGroup", "../util/Coordinates"], function (require, exports, Player_1, Util_1, Linq, EventEmitter, DataCleanse_1, TweenGroup_1, Coordinates_1) {
     "use strict";
     var World = (function () {
         function World(state) {
-            var _this = this;
             this.state = state;
             this.commandIssuingDepth = 0;
             this.tickNumber = 0;
@@ -10,7 +9,7 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             this.commandEmitter = new EventEmitter();
             this.tweens = new TweenGroup_1.default();
             this.clock.every(2000, function () {
-                _this.issueCommand(new CityHarvest_1.default());
+                //this.issueCommand(new CityHarvest());
             });
             // this.clock.every(50, ()=>{
             //     this.objectsOfType<Ship>(ShipUtil.TypeName).forEach(ship=>{
@@ -30,6 +29,12 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             if (existingPlayer) {
                 return existingPlayer;
             }
+        };
+        World.prototype.objectWithId = function (id) {
+            return Linq.from(this.state.layers)
+                .where(function (layer) { return layer.type === "objectgroup"; })
+                .selectMany(function (layer) { return layer.objects; })
+                .firstOrDefault(function (obj) { return obj.id === id; });
         };
         World.prototype.objectsOfType = function (type) {
             return Linq.from(this.state.layers)
@@ -162,11 +167,11 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
             var pointPath = tilePath.map(function (ti) { return _this.getTilePoint(ti); });
             //make sure our start and end points are part of the path
             if (!Coordinates_1.XYUtil.equals(pointPath[0], start)) {
-                pointPath.unshift(start);
+                pointPath.unshift({ x: start.x, y: start.y });
                 distance += Coordinates_1.XYUtil.distance(pointPath[0], start);
             }
             if (!Coordinates_1.XYUtil.equals(pointPath[pointPath.length - 1], end)) {
-                pointPath.push(end);
+                pointPath.push({ x: end.x, y: end.y });
                 distance += Coordinates_1.XYUtil.distance(pointPath[pointPath.length - 1], end);
             }
             return {
@@ -251,6 +256,10 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
                 if (typeof state_1 === "object") return state_1.value;
                 if (state_1 === "continue") continue;
             }
+            return {
+                path: [],
+                distance: 0
+            };
         };
         // findPath(sourceMarkerIds:string[], targetMarkerId:string):string[]{
         //
@@ -336,21 +345,21 @@ define(["require", "exports", "engine/objectTypes/Player", "../util/Util", "linq
                 .select(function (gid) { return _this.getTilePropertiesFromGid(gid); })
                 .all(function (prop) { return prop.allowMovement; });
         };
-        World.prototype.onCommand = function (clazz, callback) {
+        World.prototype.onCommand = function (clazz, callback, context) {
             var typeName = Util_1.default.FunctionName(clazz);
-            this.commandEmitter.on(typeName, callback);
+            this.commandEmitter.on(typeName, callback, context);
         };
-        World.prototype.offCommand = function (clazz, callback) {
+        World.prototype.offCommand = function (clazz, callback, context) {
             var typeName = Util_1.default.FunctionName(clazz);
-            this.commandEmitter.off(typeName, callback);
+            this.commandEmitter.off(typeName, callback, context);
         };
-        World.prototype.onCommands = function (clazzes, callback) {
+        World.prototype.onCommands = function (clazzes, callback, context) {
             var _this = this;
-            clazzes.forEach(function (clazz) { return _this.onCommand(clazz, callback); });
+            clazzes.forEach(function (clazz) { return _this.onCommand(clazz, callback, context); });
         };
-        World.prototype.offCommands = function (clazzes, callback) {
+        World.prototype.offCommands = function (clazzes, callback, context) {
             var _this = this;
-            clazzes.forEach(function (clazz) { return _this.offCommand(clazz, callback); });
+            clazzes.forEach(function (clazz) { return _this.offCommand(clazz, callback, context); });
         };
         World.prototype.issueCommand = function () {
             var _this = this;

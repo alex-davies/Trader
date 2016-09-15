@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay", "../../engine/objectTypes/Ship", "./ShipDisplay", "linq", "./overlay/ShipPathOverlay"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1, Ship_1, ShipDisplay_1, Linq, ShipPathOverlay_1) {
+define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTypes/City", "./CityDisplay", "../../engine/objectTypes/Ship", "./ShipDisplay", "linq"], function (require, exports, TileLayerDisplay_1, City_1, CityDisplay_1, Ship_1, ShipDisplay_1, Linq) {
     "use strict";
     var Container = PIXI.Container;
     var MapDisplay = (function (_super) {
@@ -54,19 +54,7 @@ define(["require", "exports", "./tiled/TileLayerDisplay", "../../engine/objectTy
             // }
             this.interactive = true;
             this.on("click", this.onClick, this);
-            this.on("selection", this.onSelection, this);
         }
-        MapDisplay.prototype.onSelection = function (selectedItems) {
-            var items = Linq.from(selectedItems);
-            var ship = items.cast().firstOrDefault(function (x) { return x.type === Ship_1.ShipUtil.TypeName; });
-            //this.underObjectsOverlay.children
-            this.underObjectsOverlay.children
-                .filter(function (x) { return x instanceof ShipPathOverlay_1.default; })
-                .forEach(function (overlay) { return overlay.emit("requestRemove"); });
-            if (ship) {
-                var pathOverlay = this.underObjectsOverlay.addChild(new ShipPathOverlay_1.default(ship));
-            }
-        };
         MapDisplay.prototype.onClick = function (e) {
             var selectedItems = [];
             var city = this.findSelectedCity(e);

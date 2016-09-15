@@ -3,52 +3,33 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../../engine/objectTypes/City", "../controls/StackContainer", "../menus/MenuContainer", "../../engine/objectTypes/Ship", "../../engine/commands/ShipMove", "../display/MapOverlayDisplay"], function (require, exports, PIXI, MapDisplay_1, Camera_1, City_1, StackContainer_1, MenuContainer_1, Ship_1, ShipMove_1, MapOverlayDisplay_1) {
+define(["require", "exports", "linq", 'pixi.js', "../display/MapDisplay", "../display/Camera", "../controls/StackContainer", "../menus/MenuContainer", "../../engine/objectTypes/Ship", "../display/overlay/ShipPathOverlay", "../display/overlay/ShipTravelPointsOverlay"], function (require, exports, Linq, PIXI, MapDisplay_1, Camera_1, StackContainer_1, MenuContainer_1, Ship_1, ShipPathOverlay_1, ShipTravelPointsOverlay_1) {
     "use strict";
     var PlayScene = (function (_super) {
         __extends(PlayScene, _super);
         function PlayScene(resources) {
-            var _this = this;
             _super.call(this, -resources.menuBorder.width);
             PIXI.ticker.shared.add(function () {
-                resources.world.tick(PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
+                //we will prevent hte world from skipping ahead if tab not in focus
+                var elapsedTime = Math.min(200, PIXI.ticker.shared.elapsedMS * PIXI.ticker.shared.speed);
+                resources.world.tick(elapsedTime);
             });
             this.mapDisplay = new MapDisplay_1.default(resources);
-            this.mapOverlay = new MapOverlayDisplay_1.default(resources, this.mapDisplay);
-            this.camera = new Camera_1.default(resources, this.mapOverlay);
+            this.camera = new Camera_1.default(resources, this.mapDisplay);
             this.menuContainer = new MenuContainer_1.default(resources);
-            this.mapOverlay.showMoveButtons();
-            var ship = resources.world.objectOfType(Ship_1.ShipUtil.TypeName);
-            resources.world.issueCommand(new ShipMove_1.default(ship, 188));
-            //this.mapOverlay.showMovePath(ship);
-            // let f1 = new UIContainer({horizontalAlign:"right"});
-            // f1.width = 600;
-            // f1.height = 900;
-            // f1.addChild(new PIXI.Text("hi"));
-            // this.addChild(f1, {pixels:300});
-            // let c = this.addChild(new Container());
-            // let t = c.addChild(new PIXI.Text("hi"));
-            //
-            // let bounds = c.getBounds();
-            // let localBounds = c.getLocalBounds();
-            //
-            // t.x = 100;
-            // t.y = 100;
-            // let bounds2 = c.getBounds();
-            // let localBounds2 = c.getLocalBounds();
-            // debugger;
             this.addChild(this.menuContainer, { pixels: 300, z: 1 });
             this.addChild(this.camera, { weight: 1 });
-            this.mapDisplay.on("click", function (e) {
-                var objSelection = e.data.selection;
-                if (City_1.CityUtil.IsCity(objSelection)) {
-                    _this.menuContainer.showCityMenu(e.data.selection);
-                }
+            //for now we will treat the players ship as always selected
+            var player = resources.world.player();
+            var playerShip = resources.world.objectsOfType(Ship_1.ShipUtil.TypeName).firstOrDefault(function (s) { return s.properties.playerId === player.id; });
+            if (playerShip) {
+                this.mapDisplay.underObjectsOverlay.addChild(new ShipPathOverlay_1.default(resources, playerShip)).animateIn();
+                this.mapDisplay.underObjectsOverlay.addChild(new ShipTravelPointsOverlay_1.default(resources, playerShip)).animateIn();
+            }
+            this.mapDisplay.on("selection", function (selectedItems) {
+                selectedItems = selectedItems.push(playerShip);
+                var items = Linq.from(selectedItems);
             });
-            setInterval(function () {
-                var camera = _this.camera;
-                //debugger;
-            }, 5000);
         }
         return PlayScene;
     }(StackContainer_1.HContainer));

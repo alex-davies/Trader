@@ -1,4 +1,5 @@
 import * as Linq from "linq"
+import * as TWEEN from "tween.js";
 import {Properties} from "./Properties";
 
 export class ShipUtil{
@@ -15,10 +16,13 @@ export class ShipUtil{
 
 export interface Ship extends Tiled.LayerObject{
     properties:{
+        playerId:number;
+
         resourceLimit:number;
         moveToTileIndex:number;
         moveFromTileIndex:number;
 
+        _moveTween:TWEEN.Tween;
         _moveToPoints:{x:number,y:number}[];
         _moveFromPoints:{x:number,y:number}[];
     };

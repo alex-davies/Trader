@@ -12,6 +12,7 @@ import * as Linq from "linq"
 import ShipPathOverlay from "./overlay/ShipPathOverlay";
 import Container = PIXI.Container;
 import * as TWEEN from "tween.js"
+import ShipTravelPointsOverlay from "./overlay/ShipTravelPointsOverlay";
 
 export default class MapDisplay extends PIXI.Container{
 
@@ -82,21 +83,9 @@ export default class MapDisplay extends PIXI.Container{
         this.interactive = true;
 
         this.on("click", this.onClick, this);
-        this.on("selection", this.onSelection, this);
     }
 
-    onSelection(selectedItems:Tiled.LayerObject[]){
-        let items = Linq.from(selectedItems);
 
-        let ship = items.cast<Ship>().firstOrDefault(x=>x.type === ShipUtil.TypeName);
-        //this.underObjectsOverlay.children
-        this.underObjectsOverlay.children
-            .filter(x=>x instanceof ShipPathOverlay)
-            .forEach(overlay=>overlay.emit("requestRemove"));
-        if(ship){
-            let pathOverlay = this.underObjectsOverlay.addChild(new ShipPathOverlay(ship));
-        }
-    }
 
     onClick(e){
         let selectedItems = [];

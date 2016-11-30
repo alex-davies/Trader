@@ -1,0 +1,9 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/dflor003/typed-linq/e2f472b4442d898f729a6eb26cacdcf8d45d272e/typings.json",
+    "raw": "registry:npm/linq#3.0.5+20160322032703",
+    "main": "./linq.d.ts",
+    "name": "linq"
+  }
+}

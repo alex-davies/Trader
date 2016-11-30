@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/pixijs/pixi-typescript/7cf7a55e4e1930fa730e175600d91e3511329517/pixi.js.d.ts",
+    "raw": "github:pixijs/pixi-typescript/pixi.js.d.ts#7cf7a55e4e1930fa730e175600d91e3511329517",
+    "typings": "https://raw.githubusercontent.com/pixijs/pixi-typescript/7cf7a55e4e1930fa730e175600d91e3511329517/pixi.js.d.ts"
+  }
+}

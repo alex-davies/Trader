@@ -1,0 +1,11 @@
+{
+  "globalDependencies": {
+    "eventemitter3": "registry:dt/eventemitter3#1.2.0+20160901210137",
+    "linq": "registry:dt/linq#2.2.0+20160619013616",
+    "pixi.js": "github:pixijs/pixi-typescript/pixi.js.d.ts#7cf7a55e4e1930fa730e175600d91e3511329517",
+    "tween.js": "registry:dt/tween.js#0.0.0+20160608102153"
+  },
+  "dependencies": {
+    "linq": "registry:npm/linq#3.0.5+20160322032703"
+  }
+}
